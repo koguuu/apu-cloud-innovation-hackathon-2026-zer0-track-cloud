@@ -64,13 +64,13 @@ Full details: [docs/architecture.md](docs/architecture.md) · Data contract: [do
 
 ## Demo story (3 minutes): one student, one journey
 
-We follow one student, "Aisha":
+We follow one student, "Raja":
 
-1. She wants to do her IoT lab. The app shows which labs are free and working.
+1. Raja wants to do the IoT lab. The app shows which labs are free and working.
 2. We click **"Kill AP"** (fault injection). Probe metrics degrade and the agent finds the root cause.
 3. An IT ticket is created automatically and the **admin gets a Telegram alert**.
-4. The app updates and sends Aisha to a healthy lab.
-5. *(Stretch)* Weeks later she asks the chatbot "what should I pursue next?" and it answers from her own lab hours.
+4. The app updates and sends Raja to a healthy lab.
+5. *(Stretch)* Weeks later Raja asks the chatbot "what should I pursue next?" and it answers from Raja's own lab hours.
 
 Show results, not logs. The Campus Health part should take about 50 seconds of the pitch.
 

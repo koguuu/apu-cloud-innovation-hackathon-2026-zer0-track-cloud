@@ -3,16 +3,20 @@
 This is the one format everyone builds against so we can work in parallel.
 **Change it only after telling the group.** All timestamps are ISO 8601 UTC.
 
+Core (Campus Health) uses `wifi_telemetry`, `card_access`, `iot_health`, `ticket`, `advisory`, `notification` and `zone_status`.
+Stretch (Lab Record) uses `lab_activity` and `career_suggestion`.
+
 ## Locations
 
 | `location_id` | Name | Capacity (seats) |
 |---|---|---|
 | `block-a` | Block A | 120 |
 | `block-b` | Block B | 120 |
-| `library` | Library | 200 |
+| `library` | Library (optional) | 200 |
 | `lab-ai` | AI Lab | 40 |
 | `lab-cyber` | Cybersecurity Lab | 40 |
 | `lab-network` | Networking Lab | 40 |
+| `lab-iot` | IoT Lab | 40 |
 
 Access points use ids like `ap-b-02` (block, number).
 
@@ -52,7 +56,24 @@ Access points use ids like `ap-b-02` (block, number).
 
 `action` is `enter` or `exit`.
 
-### `lab_activity`
+### `iot_health`
+
+```json
+{
+  "event_type": "iot_health",
+  "event_id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+  "timestamp": "2026-11-05T10:15:32Z",
+  "location_id": "lab-iot",
+  "device_id": "reader-iot-01",
+  "device_type": "card_reader",
+  "status": "ok",
+  "detail": "heartbeat ok"
+}
+```
+
+`device_type`: `card_reader`, `sensor`, `switch`. `status`: `ok`, `degraded`, `down`.
+
+### `lab_activity` (stretch)
 
 ```json
 {
@@ -87,7 +108,7 @@ Access points use ids like `ap-b-02` (block, number).
 }
 ```
 
-`root_cause`: `ap_hardware_failure`, `isp_uplink_outage`, `congestion`, `unknown`.
+`root_cause`: `ap_hardware_failure`, `isp_uplink_outage`, `congestion`, `iot_device_fault`, `unknown`.
 
 ### `advisory`
 
@@ -100,6 +121,21 @@ Access points use ids like `ap-b-02` (block, number).
   "suggested_location": "lab-network"
 }
 ```
+
+### `notification` (agent -> Telegram sender)
+
+```json
+{
+  "notification_id": "N-0001",
+  "created_at": "2026-11-05T10:16:07Z",
+  "channel": "telegram",
+  "ticket_id": "T-0001",
+  "text": "[HIGH] Block B: ap-b-02 hardware failure. Action: reboot or replace ap-b-02.",
+  "sent": false
+}
+```
+
+`sent` becomes `true` after the Telegram sender delivers it. The dashboard shows this as "admin notified".
 
 ### `zone_status`
 
@@ -114,9 +150,9 @@ Access points use ids like `ap-b-02` (block, number).
 }
 ```
 
-`wifi_health`: `good`, `degraded`, `down`. `score`: 0 to 1, higher means a better place to study.
+`wifi_health`: `good`, `degraded`, `down`. `score`: 0 to 1, higher means a better place to be right now.
 
-### `career_suggestion`
+### `career_suggestion` (stretch)
 
 ```json
 {
@@ -134,6 +170,9 @@ Access points use ids like `ap-b-02` (block, number).
     "Month 3-4: cloud basics and hands-on labs",
     "Month 5-6: certification prep and a portfolio project"
   ],
+  "flagged_minutes": 30,
   "disclaimer": "This is a suggestion based on lab activity, not a final decision."
 }
 ```
+
+`flagged_minutes`: minutes excluded because the lab had an outage ticket in that window.
