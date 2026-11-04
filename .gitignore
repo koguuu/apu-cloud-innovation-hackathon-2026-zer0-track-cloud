@@ -1,0 +1,21 @@
+# secrets
+.env
+*.pem
+*.key
+service-account*.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# node
+node_modules/
+dist/
+build/
+
+# editor / os
+.vscode/
+.idea/
+.DS_Store
