@@ -1,86 +1,99 @@
-# Campus Lab Agent (working title)
+# Smart Lab Companion (working title)
 
 **APU Cloud Innovation Hackathon 2026** · Track: *Intelligent Automation & Digital Transformation*
 
-> An autonomous campus agent that turns Wi-Fi telemetry and lab card-reader logs into
-> (1) live "where should I study right now?" guidance plus automatic IT tickets, and
-> (2) career-path suggestions based on what students actually do in the labs.
+> From finding a working lab to knowing what to learn next, one companion for every student's lab journey.
 
-**One data pipeline, two outputs.** Cloud + Network + IoT working together in a single loop.
+An autonomous campus agent that watches Wi-Fi and IoT health across Block A, Block B and the labs, finds the
+root cause when something fails, alerts the admin automatically, and tells students which labs are free and
+working right now. A lab-record module (stretch goal) turns each student's lab hours into personalised
+"what should I learn next?" guidance.
 
 ---
 
+## Scope
+
+| Priority | Feature | What it does |
+|---|---|---|
+| **Core (build first)** | **Campus Health** | Monitors Wi-Fi and IoT health per block and lab, finds the root cause of failures, opens an IT ticket, sends a Telegram alert to the admin, and shows students which labs are free and working. |
+| **Stretch** | **Lab Record** | Uses card-reader lab hours and modules completed to power a Gemini chatbot: "what should I pursue next?", answered from the student's own data. |
+
+**Rule:** Campus Health comes first and must work end to end. Lab Record is built only after the first
+end-to-end run (**7 Nov**). If the chatbot isn't working by then, it becomes a "future roadmap" slide in the
+pitch and not a feature.
+
 ## The problem
 
-- Campus Wi-Fi degrades often. Everyone floods the staff Wi-Fi, and IT finds out late and diagnoses by hand.
-- Students don't know which lab or library has free seats **and** a working network.
-- Students get little data-driven guidance on which career direction fits their hands-on lab work.
+- Campus Wi-Fi and lab equipment fail often. Everyone floods the staff Wi-Fi, and IT finds out late and diagnoses by hand.
+- Students can't tell which lab has free seats **and** a working network.
+- Students get little data-driven guidance on what to learn next from their hands-on lab work.
 
 ## The solution
 
 | Layer | What it does | How (prototype) |
 |---|---|---|
-| **IoT** | Card-reader logs: who enters or leaves which lab, so we know live occupancy | Simulated log generator |
-| **Network** | Wi-Fi probe telemetry (latency, packet loss, RSSI, AP syslogs) plus lab activity (time spent, modules completed) | Python probes in Block A, Block B, Library |
-| **Cloud** | Gemini analyses everything: root cause of failures, IT tickets, student advisories, career path suggestions | Gemini + Google Cloud |
-
-**Ops side (AIOps):** detects Wi-Fi degradation or AP failure, finds the root cause (AP hardware vs ISP link), logs an IT ticket and posts a student advisory.
-
-**Student side:** shows the best place to study right now (seats plus network quality). The career module turns lab activity into a career fit, recommended certs and a 6-month plan.
+| **IoT** | Card-reader logs: who enters or leaves which lab, so we know live occupancy. IoT device health per block. | Simulated log generator |
+| **Network** | Wi-Fi probe telemetry (latency, packet loss, RSSI, AP syslogs) for Block A, Block B and the labs | Python probes |
+| **Cloud** | Gemini analyses the logs: root cause, tickets, advisories, and (stretch) career guidance | Gemini + Google Cloud |
 
 ## Architecture
 
 ```mermaid
 flowchart LR
   subgraph SIM["IoT + Network layer (simulated)"]
-    P[Wi-Fi probes<br/>Block A / Block B / Library]
+    P[Wi-Fi / IoT probes<br/>Block A, Block B, labs]
     C[Card reader logs]
-    L[Lab activity logs]
   end
-  P --> I
+  P --> I[Ingest API]
   C --> I
-  L --> I
-  I[Ingest API / event stream] --> B[Backend API<br/>Cloud Run]
+  I --> B[Backend<br/>Cloud Run / FastAPI]
   B --> DB[(Firestore)]
-  B --> G[Gemini agent<br/>RCA, tickets, advisories, career]
+  B --> G[Gemini agent<br/>root cause, tickets, advisories]
   G --> DB
-  DB --> S[Student web app]
+  G --> TG[Telegram alert<br/>to admin]
+  DB --> S[Student web app<br/>which labs are free and working]
   DB --> T[Staff dashboard]
+  subgraph STRETCH["Stretch: Lab Record"]
+    L[Lab hours + modules] --> CB[Gemini chatbot<br/>what should I learn next?]
+  end
+  C -.-> L
+  CB -.-> S
 ```
 
 Full details: [docs/architecture.md](docs/architecture.md) · Data contract: [docs/event-schema.md](docs/event-schema.md)
 
-## Demo flow (3 minutes)
+## Demo story (3 minutes): one student, one journey
 
-1. Normal state: the student page shows all zones healthy with seat counts.
-2. Click **"Kill AP in Block B"** (fault injection).
-3. Probe metrics degrade, and the agent detects it and runs root-cause analysis.
-4. IT ticket is created automatically and the staff dashboard lights up.
-5. The student page updates: "Block B Wi-Fi degraded, try Lab 3 (12 seats free, stable Wi-Fi)".
-6. Career panel: "Based on your lab hours, you fit SOC Analyst. Here is your 6-month plan."
+We follow one student, "Aisha":
+
+1. She wants to do her IoT lab. The app shows which labs are free and working.
+2. We click **"Kill AP"** (fault injection). Probe metrics degrade and the agent finds the root cause.
+3. An IT ticket is created automatically and the **admin gets a Telegram alert**.
+4. The app updates and sends Aisha to a healthy lab.
+5. *(Stretch)* Weeks later she asks the chatbot "what should I pursue next?" and it answers from her own lab hours.
+
+Show results, not logs. The Campus Health part should take about 50 seconds of the pitch.
 
 ## Team
 
 | Member | Owns | Folder |
 |---|---|---|
 | **Htet Win** | AI agent: Gemini root-cause analysis, ticket and advisory generation | [`agent/`](agent/) |
-| **Raja** | Simulators: Wi-Fi probes, card-reader logs, fault injection | [`simulator/`](simulator/) |
+| **Raja** | Simulators: Wi-Fi/IoT probes, card-reader logs, fault injection | [`simulator/`](simulator/) |
 | **Pang Zai Yong** | Frontend: student page and staff dashboard | [`frontend/`](frontend/) |
-| **Pang Zai Jie** | Career path module, plus pitch deck story | [`career/`](career/) |
+| **Pang Zai Jie** | Telegram admin alert, occupancy data, pitch deck. Stretch: Lab Record chatbot | [`career/`](career/) |
 | **Koguleswaraan** | Cloud setup, backend and integration, security, final submission | [`backend/`](backend/) |
 
 Detailed tasks and timeline: [docs/team-plan.md](docs/team-plan.md)
 
-## Tech stack (proposed, confirm after briefing notes)
+## Tech stack (proposed)
 
 - **Simulators / backend / agent:** Python (FastAPI)
-- **Event stream:** Google Cloud Pub/Sub (or a plain ingest endpoint if time is short)
+- **Event stream:** Google Cloud Pub/Sub, or a plain ingest endpoint if time is short
 - **Hosting:** Cloud Run · **Database:** Firestore
 - **AI:** Gemini via Vertex AI or the Gemini API
+- **Admin alerts:** Telegram Bot API
 - **Frontend:** to be decided by Pang Zai Yong (keep it simple)
-
-> Open question: the original idea mentioned *Google Antigravity* as the event pipeline. Confirm from the
-> briefing what it is meant for. If unsure, we use Pub/Sub.
 
 ## Repo structure
 
@@ -93,19 +106,20 @@ Detailed tasks and timeline: [docs/team-plan.md](docs/team-plan.md)
 ├── agent/                    # Win: Gemini agent logic and prompts
 ├── backend/                  # Koguleswaraan: API, cloud config, integration
 ├── frontend/                 # Pang Zai Yong: student page + staff dashboard
-├── career/                   # Pang Zai Jie: career path module
+├── career/                   # Pang Zai Jie: Telegram alert, lab record (stretch)
 └── .env.example              # copy to .env, never commit secrets
 ```
 
 ## Privacy and data
 
 All data in this prototype is **simulated**. Student IDs are anonymised (hashed) in every event, and the
-career module is an **opt-in suggestion**, not a judgement of the student.
+Lab Record chatbot is an **opt-in suggestion**, not a judgement of the student.
 
 ## Key dates (MYT)
 
 | Date | What |
 |---|---|
+| **7 Nov** | First end-to-end run. Decide whether Lab Record stays in. |
 | 8 Nov, 11:59 PM | Team registration closes (leader creates the team, all 5 members join) |
 | **10 Nov, 11:59 PM** | **Prototype submission deadline** (aim to submit by the afternoon) |
 | 11-14 Nov | Submission assessment |
@@ -123,4 +137,4 @@ career module is an **opt-in suggestion**, not a judgement of the student.
 
 ## Status
 
-Planning phase. Idea locked: Wi-Fi health core plus lab card-reader data plus career path module.
+Build phase. Core scope: Campus Health. Stretch: Lab Record chatbot. Checkpoint: 7 Nov.
