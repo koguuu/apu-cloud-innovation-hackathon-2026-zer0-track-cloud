@@ -200,3 +200,42 @@ def test_lab_activity_is_stored_for_the_stretch_module(client):
     assert post(client, event).json()["status"] == "accepted"
     from app.store import store
     assert len(store.lab_activity) == 1
+
+
+def _bad_round(aps):
+    return [bad_wifi(ap, loc) for ap, loc in aps]
+
+
+def test_batch_classifies_once_so_an_uplink_outage_is_one_ticket(client, sent):
+    healthy_campus(client)
+    aps = [("ap-a-01", "block-a"), ("ap-b-01", "block-b"), ("ap-b-02", "block-b"), ("ap-n-01", "lab-network")]
+    events = []
+    for _ in range(3):  # three readings from every AP, sent as one batch
+        events += _bad_round(aps)
+    r = client.post("/events/batch", json=events)
+    assert r.status_code == 200
+    assert len(r.json()["tickets_opened"]) == 1
+
+    tickets = client.get("/tickets").json()
+    assert len(tickets) == 1 and tickets[0]["root_cause"] == "isp_uplink_outage"
+    assert [n.ticket_id for n in sent] == ["T-0001"]  # one Telegram alert, not four
+
+
+def test_batch_degrading_a_whole_block_is_high_severity(client):
+    healthy_campus(client)
+    events = []
+    for _ in range(3):
+        events += _bad_round([("ap-b-01", "block-b"), ("ap-b-02", "block-b")])
+    client.post("/events/batch", json=events)
+    ticket = client.get("/tickets/T-0001").json()
+    assert ticket["severity"] == "high"
+    assert ticket["affected_aps"] == ["ap-b-01", "ap-b-02"]
+
+
+def test_severity_goes_up_when_more_aps_fail_later(client):
+    healthy_campus(client)
+    trip(client, "ap-b-01", "block-b")
+    assert client.get("/tickets/T-0001").json()["severity"] == "medium"
+    trip(client, "ap-b-02", "block-b")  # the rest of the block now fails too
+    ticket = client.get("/tickets/T-0001").json()
+    assert ticket["severity"] == "high" and len(client.get("/tickets").json()) == 1

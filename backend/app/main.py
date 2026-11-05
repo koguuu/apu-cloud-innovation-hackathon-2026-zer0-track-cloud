@@ -99,29 +99,15 @@ async def ingest_batch(request: Request) -> JSONResponse:
     if len(payload) > get_settings().max_batch:
         return JSONResponse({"error": "batch_too_large", "max": get_settings().max_batch}, status_code=413)
 
-    accepted = duplicates = 0
-    rejected, opened, resolved = [], [], []
+    rejected, valid = [], []
     for index, item in enumerate(payload):
         event, err = _parse_event(item)
         if err is not None:
             rejected.append({"index": index, **err})
-            continue
-        result = await run_in_threadpool(engine.process, event)
-        if result["status"] == "duplicate":
-            duplicates += 1
         else:
-            accepted += 1
-            opened += result["tickets_opened"]
-            resolved += result["tickets_resolved"]
-    return JSONResponse(
-        {
-            "accepted": accepted,
-            "duplicates": duplicates,
-            "rejected": rejected,
-            "tickets_opened": opened,
-            "tickets_resolved": resolved,
-        }
-    )
+            valid.append(event)
+    result = await run_in_threadpool(engine.process_batch, valid)
+    return JSONResponse({**result, "rejected": rejected})
 
 
 async def state(request: Request) -> JSONResponse:
