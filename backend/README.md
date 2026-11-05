@@ -11,7 +11,7 @@ State is kept in memory (fine for the demo; one instance). Everything here runs 
 cd backend
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
-pytest                                                  # 48 tests
+pytest                                                  # 57 tests
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -62,7 +62,7 @@ curl -s localhost:8000/state
 - Root cause rules: many APs bad at once across 2+ locations means `isp_uplink_outage` (campus-wide, replaces per-AP tickets). Bad APs with many clients, low loss and good signal means `congestion`. Other bad APs mean `ap_hardware_failure`. An IoT device reporting `down` means `iot_device_fault`.
 - Opening a ticket also creates a student advisory (pointing to the best healthy lab with free seats) and an admin notification. When readings recover, the ticket auto-resolves and a recovery advisory is posted.
 - `seats_free` = capacity minus students currently inside (a student is in one place at a time).
-- Gemini is optional. Without `GEMINI_API_KEY` the explanation comes from a template.
+- Gemini is optional. Without `GEMINI_API_KEY` the explanation comes from a template. Models: `GEMINI_MODEL` (default `gemini-flash-lite-latest`) with `GEMINI_FALLBACK_MODEL` (default `gemini-3.5-flash`); each is retried once on a 429/500/503. Model availability changes, so check `GEMINI_MODEL` first if explanations turn into template text.
 
 ## Security and privacy
 
@@ -83,9 +83,9 @@ State is in memory, so run **one instance** (`--max-instances 1`) and expect a r
 
 ## Not done yet
 
-- Real Gemini calls and real Telegram delivery are covered by tests with fakes only. They need a key and a bot token to try for real.
+- Real Telegram delivery is covered by tests with fakes only. It needs a bot token to try for real.
 - Cloud Run deploy and Firestore: waiting on the billing / licence decision.
-- Lab Record (stretch): `lab_activity` events are stored, but there is no chatbot yet.
+- Lab Record chatbot (stretch): `lab_activity` events are stored, but there is no chatbot.
 
 ## Batches
 
