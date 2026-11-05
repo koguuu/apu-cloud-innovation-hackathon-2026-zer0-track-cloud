@@ -22,7 +22,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 from settings import ALL_APS, AP_LAYOUT, AP_LOCATION, BLOCKS, CAPACITY, DEVICES, LABS
 
 STUDENT_POOL = 220          # fake students (more than the 160 lab seats)
-IOT_EVERY = 3               # healthy devices report every 3rd tick; faulty ones report every tick
+IOT_EVERY = 1               # every device reports every tick
 LAB_FACTOR = {"lab-ai": 0.90, "lab-cyber": 0.75, "lab-network": 0.80, "lab-iot": 0.60}
 MAX_OCCUPANCY = 0.90        # labs never fill completely, so the student page always has a free seat
 CLIENTS_PER_AP_AT_PEAK = 85  # block APs; the congestion limit in the backend is 150
