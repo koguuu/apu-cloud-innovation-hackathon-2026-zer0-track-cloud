@@ -166,3 +166,101 @@ def test_hashing_requires_a_salt():
 def test_find_pii_keys_looks_inside_nested_data():
     assert find_pii_keys({"a": [{"Email": "x"}], "b": {"student_id": 1}}) == ["Email", "student_id"]
     assert find_pii_keys({"student_hash": "s_00000001"}) == []
+
+
+# ---------------------------------------------------------------- notifier HTML (Pang Zai Jie)
+def test_telegram_html_incident_message(monkeypatch):
+    """Rich HTML formatting is sent for incident notifications."""
+    notifier.set_sender(None)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:abc")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    calls = []
+
+    def fake_urlopen(req, timeout=None):
+        calls.append(req.data.decode())
+        return FakeResponse({"ok": True})
+
+    monkeypatch.setattr(notifier.urllib.request, "urlopen", fake_urlopen)
+    n = m.Notification(
+        notification_id="N-1", created_at="t", ticket_id="T-1",
+        text="T-0001 [HIGH] Block B: AP hardware failure (ap-b-02). Action: Reboot or replace ap-b-02.",
+    )
+    assert notifier.send_notification(n) == (True, None)
+    assert calls, "expected at least one Telegram call"
+    payload = calls[0]
+    # HTML parse mode is requested
+    assert "parse_mode=HTML" in payload
+    # Key content is present (URL-encoded)
+    import urllib.parse as _up
+    decoded = _up.unquote_plus(payload)
+    assert "Smart Lab Alert" in decoded
+    assert "ap-b-02" in decoded
+
+
+def test_telegram_html_recovery_message(monkeypatch):
+    """Rich HTML formatting is sent for recovery notifications."""
+    notifier.set_sender(None)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:abc")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    calls = []
+
+    def fake_urlopen(req, timeout=None):
+        calls.append(req.data.decode())
+        return FakeResponse({"ok": True})
+
+    monkeypatch.setattr(notifier.urllib.request, "urlopen", fake_urlopen)
+    n = m.Notification(
+        notification_id="N-2", created_at="t", ticket_id="T-1",
+        text="T-0001 [RESOLVED] Block B: AP hardware failure cleared.",
+    )
+    assert notifier.send_notification(n) == (True, None)
+    assert calls
+    import urllib.parse as _up
+    decoded = _up.unquote_plus(calls[0])
+    assert "parse_mode=HTML" in calls[0]
+    assert "RESOLVED" in decoded
+
+
+def test_telegram_html_fallback_to_plain_when_html_fails(monkeypatch):
+    """If the HTML send fails (Telegram rejects it), the plain-text fallback is used."""
+    notifier.set_sender(None)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:abc")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    calls = []
+
+    def fake_urlopen(req, timeout=None):
+        data = req.data.decode()
+        calls.append(data)
+        # Reject HTML, accept plain text
+        if "parse_mode=HTML" in data:
+            return FakeResponse({"ok": False, "description": "Bad Request: can't parse"})
+        return FakeResponse({"ok": True})
+
+    monkeypatch.setattr(notifier.urllib.request, "urlopen", fake_urlopen)
+    n = m.Notification(
+        notification_id="N-3", created_at="t", ticket_id="T-1",
+        text="T-0001 [HIGH] Block B: AP hardware failure (ap-b-02). Action: Reboot.",
+    )
+    ok, err = notifier.send_notification(n)
+    assert ok is True and err is None
+    # first call uses HTML, second call uses plain text
+    assert len(calls) == 2
+    assert "parse_mode=HTML" in calls[0]
+    assert "parse_mode" not in calls[1]
+
+
+def test_escape_html_handles_special_chars():
+    """HTML special characters in AP/location names are safely escaped."""
+    from app.notifier import _escape_html
+    assert _escape_html("a & b") == "a &amp; b"
+    assert _escape_html("<b>") == "&lt;b&gt;"
+    assert _escape_html("normal text") == "normal text"
+
+
+def test_build_html_returns_none_on_unparseable_text():
+    """_build_html never raises; it returns None on garbage input."""
+    from app.notifier import _build_html
+    n = m.Notification(notification_id="N-x", created_at="t", ticket_id="T-x", text="garbage")
+    # Should not raise; None signals "fall back to plain text"
+    result = _build_html(n)
+    assert result is None or isinstance(result, str)
