@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Optional
@@ -19,6 +20,7 @@ log = logging.getLogger("llm")
 def call_gemini(prompt: str, *, json_mode: bool = False) -> Optional[str]:
     s = get_settings()
     if not s.gemini_api_key:
+        log.info("GEMINI_API_KEY is not set, using template text")
         return None
     model = urllib.parse.quote(s.gemini_model, safe="")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -38,6 +40,9 @@ def call_gemini(prompt: str, *, json_mode: bool = False) -> Optional[str]:
         with urllib.request.urlopen(req, timeout=s.gemini_timeout_s) as resp:
             data = json.load(resp)
         return data["candidates"][0]["content"]["parts"][0]["text"]
+    except urllib.error.HTTPError as exc:
+        log.warning("Gemini call failed: HTTP %s (model %s), using template text", exc.code, s.gemini_model)
+        return None
     except Exception as exc:  # network, quota, bad JSON... never crash ingest
         log.warning("Gemini call failed (%s), using template text", type(exc).__name__)
         return None
