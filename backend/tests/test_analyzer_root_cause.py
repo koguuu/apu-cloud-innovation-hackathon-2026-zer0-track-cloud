@@ -88,3 +88,27 @@ def test_gemini_failure_uses_template_and_keeps_cause(monkeypatch, bad):
     d = _ap_draft()
     explanation, action = explain(d)
     assert d.cause == "ap_hardware_failure" and "ap-b-02" in explanation and action
+
+
+# ---- template wording (used when Gemini is unavailable) ----
+def _template_draft(cause, aps):
+    ev = {"tripped": [{"ap_id": a, "location_id": "block-b", "latency_ms": 900, "packet_loss_pct": 100,
+                       "rssi_dbm": -90, "clients": 60} for a in aps], "healthy_neighbours": [], "total_aps": 6}
+    return Draft(cause=cause, location_id="block-b", affected_aps=list(aps), evidence=ev)
+
+
+def test_template_ap_failure_one_ap_says_its_switch_port():
+    _, action = analyzer.template(_template_draft("ap_hardware_failure", ["ap-b-02"]))
+    assert "its switch port" in action and "their" not in action
+
+
+def test_template_ap_failure_two_aps_say_their_switch_ports():
+    _, action = analyzer.template(_template_draft("ap_hardware_failure", ["ap-b-01", "ap-b-02"]))
+    assert "their switch ports" in action and "its switch port" not in action
+
+
+def test_template_congestion_has_vs_have():
+    one, _ = analyzer.template(_template_draft("congestion", ["ap-b-01"]))
+    two, _ = analyzer.template(_template_draft("congestion", ["ap-b-01", "ap-b-02"]))
+    assert "ap-b-01 in" in one and " has high latency" in one
+    assert " have high latency" in two

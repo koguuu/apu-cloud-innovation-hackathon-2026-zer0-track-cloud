@@ -54,7 +54,7 @@ def template(d: Draft) -> tuple[str, str]:
         return (
             f"{aps} in {place} {'shows' if len(d.affected_aps) == 1 else 'show'} {worst['packet_loss_pct']:.0f}% packet loss and "
             f"{worst['latency_ms']:.0f} ms latency{tail}",
-            f"Reboot or replace {aps}; check its switch port and power.",
+            f"Reboot or replace {aps}; check {'their switch ports' if len(d.affected_aps) > 1 else 'its switch port'} and power.",
         )
     if d.cause == "isp_uplink_outage" and tripped:
         n_locations = len({a["location_id"] for a in tripped})
@@ -67,7 +67,7 @@ def template(d: Draft) -> tuple[str, str]:
     if d.cause == "congestion" and tripped:
         worst = max(tripped, key=lambda a: a["clients"])
         return (
-            f"{aps} in {place} have high latency ({worst['latency_ms']:.0f} ms) with many clients "
+            f"{aps} in {place} {'have' if len(d.affected_aps) > 1 else 'has'} high latency ({worst['latency_ms']:.0f} ms) with many clients "
             f"({worst['clients']}) but low packet loss and good signal, which points to congestion.",
             "Rebalance clients across nearby APs or add capacity.",
         )
