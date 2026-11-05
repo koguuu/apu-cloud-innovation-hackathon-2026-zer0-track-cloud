@@ -46,7 +46,7 @@ flowchart LR
   end
   P --> I[Ingest API]
   C --> I
-  I --> B[Backend<br/>Cloud Run / FastAPI]
+  I --> B[Backend<br/>Cloud Run / Starlette]
   B --> DB[(Firestore)]
   B --> G[Gemini agent<br/>root cause, tickets, advisories]
   G --> DB
@@ -88,7 +88,7 @@ Detailed tasks and timeline: [docs/team-plan.md](docs/team-plan.md)
 
 ## Tech stack (proposed)
 
-- **Simulators / backend / agent:** Python (FastAPI)
+- **Simulators / backend / agent:** Python (backend on Starlette + uvicorn, see [backend/README.md](backend/README.md))
 - **Event stream:** Google Cloud Pub/Sub, or a plain ingest endpoint if time is short
 - **Hosting:** Cloud Run · **Database:** Firestore
 - **AI:** Gemini via Vertex AI or the Gemini API

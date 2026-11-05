@@ -12,7 +12,7 @@ flowchart LR
   end
   P --> I[Ingest API / Pub/Sub]
   C --> I
-  I --> B[Backend - Cloud Run / FastAPI]
+  I --> B[Backend - Cloud Run / Starlette]
   B --> DB[(Firestore)]
   B --> G[Gemini agent]
   G --> DB

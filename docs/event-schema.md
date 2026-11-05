@@ -176,3 +176,14 @@ Access points use ids like `ap-b-02` (block, number).
 ```
 
 `flagged_minutes`: minutes excluded because the lab had an outage ticket in that window.
+
+## Additions made by the backend
+
+These extra fields exist in what the backend returns (`backend/app/models.py` is the source of truth):
+
+- `ticket`: also has `affected_devices` (IoT device ids), `resolved_at`, `resolution_note`. `status` is `open` or `resolved`. `location_id` is `campus` for an uplink outage.
+- `advisory`: also has `kind` (`incident` or `recovery`) and `ticket_id`.
+- `notification`: also has `error` (for example `telegram_not_configured`). `sent` is `false` until delivered.
+- `zone_status`: also has `name` and `iot_devices_down`. `wifi_health` can be `unknown` when no probe has reported for that location yet.
+- Events must **not** contain raw identifiers (`student_id`, `name`, `email`, ...). They are rejected with HTTP 422. Use `student_hash`, which looks like `s_` plus 8 to 64 hex characters.
+- A flag trips after 3 bad readings in a row and clears after 3 good ones.
