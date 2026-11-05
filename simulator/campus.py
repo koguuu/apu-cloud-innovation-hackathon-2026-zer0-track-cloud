@@ -101,7 +101,7 @@ class Campus:
         return {"event_type": event_type, "event_id": str(uuid.uuid4()), "timestamp": _now_iso()}
 
     def tick_events(self, tick: int) -> List[dict]:
-        """Everything to send for one tick. APs are listed block by block (see README note on uplink)."""
+        """Everything to send for one tick. Send it as ONE batch: the backend classifies once per batch."""
         step = 999 if self._warm_up else 2
         self._warm_up = False
         events = self.wifi_events()
@@ -244,7 +244,7 @@ class Campus:
     def uplink_outage(self) -> str:
         for ap in ALL_APS:
             self.ap_mode[ap] = "dead"
-        return "campus uplink outage (every AP dead). Expect a campus-wide isp_uplink_outage ticket (see README note)."
+        return "campus uplink outage (every AP dead). Expect one campus-wide isp_uplink_outage ticket."
 
     def congest(self, block: str) -> str:
         if block not in BLOCKS:

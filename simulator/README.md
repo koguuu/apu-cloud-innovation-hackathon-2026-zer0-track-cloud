@@ -59,11 +59,6 @@ Tickets resolve after 3 good readings, so keep the simulator running after `reco
 - **Card events:** 220 fake students with ids like `s_9f2c41ab12`. Labs fill and empty with the day pattern and never exceed 40.
 - **IoT:** healthy devices report every 3rd tick, faulty ones every tick.
 
-## Known behaviour of the backend (not the simulator)
-
-- **Uplink outage sends extra alerts first.** The backend classifies each AP as soon as it trips, so before the campus-wide ticket exists it opens up to 3 per-location tickets (and 3 Telegram alerts), then supersedes them. Fix idea for the backend: classify once at the end of each batch, or wait a moment before opening tickets.
-- **Severity stays `medium` for degrade-block and lab-down.** Severity is set when the first AP trips, when the rest of the location still looks healthy.
-
 ## Tests
 
 ```bash
