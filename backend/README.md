@@ -17,7 +17,7 @@ uvicorn app.main:app --reload --port 8000
 
 Check it: `curl http://localhost:8000/health`
 
-Config comes from environment variables (see `../.env.example`). Everything is optional in dev.
+Config comes from environment variables (see `../.env.example`). Everything is optional in dev. A `.env` file in `backend/` or the repo root is loaded automatically on start (real environment variables win; `.env` is git-ignored).
 
 ## What each teammate uses
 

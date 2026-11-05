@@ -1,5 +1,9 @@
+import os
+
 import pytest
 from starlette.testclient import TestClient
+
+os.environ["SKIP_DOTENV"] = "1"  # never read a developer's real .env during tests
 
 from app import notifier
 from app.main import create_app
