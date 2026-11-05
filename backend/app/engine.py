@@ -75,9 +75,15 @@ def _open_ticket_by(location_id: Optional[str] = None, cause: Optional[str] = No
     return None
 
 
+SEVERITY_RANK = {"low": 0, "medium": 1, "high": 2}
+
+
 def _merge(ticket: m.Ticket, d: Draft) -> None:
     ticket.affected_aps = sorted(set(ticket.affected_aps) | set(d.affected_aps))
     ticket.affected_devices = sorted(set(ticket.affected_devices) | set(d.affected_devices))
+    sev = _severity(d)  # more APs may have failed since the ticket opened: only ever go up
+    if SEVERITY_RANK[sev] > SEVERITY_RANK[ticket.severity]:
+        ticket.severity = sev  # type: ignore[assignment]
 
 
 # ---------------------------------------------------------------- event handlers
@@ -90,7 +96,8 @@ def _on_card(e: m.CardAccess) -> None:
         store.inside.get(e.location_id, set()).discard(e.student_hash)
 
 
-def _on_wifi(e: m.WifiTelemetry, s: Settings) -> list[Draft]:
+def _on_wifi(e: m.WifiTelemetry, s: Settings) -> bool:
+    """Update AP state. Returns True if this reading tripped the AP's flag."""
     st = store.ap_state.get(e.ap_id)
     if st is None:
         st = ApState(e.ap_id, e.location_id, e.metrics, now_iso())
@@ -106,10 +113,11 @@ def _on_wifi(e: m.WifiTelemetry, s: Settings) -> list[Draft]:
         st.good_streak, st.bad_streak = st.good_streak + 1, 0
         if st.tripped and st.good_streak >= s.good_readings_to_recover:
             st.tripped = False
-    return _classify_aps(s) if newly_tripped else []
+    return newly_tripped
 
 
-def _on_iot(e: m.IotHealth, s: Settings) -> list[Draft]:
+def _on_iot(e: m.IotHealth, s: Settings) -> bool:
+    """Update device state. Returns True if this reading tripped the device's flag."""
     st = store.devices.get(e.device_id)
     if st is None:
         st = DeviceState(e.device_id, e.location_id, e.device_type, e.status, now_iso())
@@ -126,24 +134,24 @@ def _on_iot(e: m.IotHealth, s: Settings) -> list[Draft]:
         st.good_streak, st.bad_streak = st.good_streak + 1, 0
         if st.tripped and st.good_streak >= s.good_readings_to_recover:
             st.tripped = False
-    if not newly_tripped:
-        return []
-    down = sorted(d.device_id for d in store.devices.values() if d.location_id == e.location_id and d.tripped)
-    return [
-        Draft(
-            cause="iot_device_fault",
-            location_id=e.location_id,
-            affected_devices=down,
-            evidence={
-                "devices": [
-                    {"device_id": d.device_id, "device_type": d.device_type, "status": d.status}
-                    for d in store.devices.values()
-                    if d.location_id == e.location_id and d.tripped
-                ],
-                "wifi_health": wifi_health(e.location_id),
-            },
-        )
-    ]
+    return newly_tripped
+
+
+def _iot_draft(location_id: str) -> Draft:
+    down = sorted(d.device_id for d in store.devices.values() if d.location_id == location_id and d.tripped)
+    return Draft(
+        cause="iot_device_fault",
+        location_id=location_id,
+        affected_devices=down,
+        evidence={
+            "devices": [
+                {"device_id": d.device_id, "device_type": d.device_type, "status": d.status}
+                for d in store.devices.values()
+                if d.location_id == location_id and d.tripped
+            ],
+            "wifi_health": wifi_health(location_id),
+        },
+    )
 
 
 def _classify_aps(s: Settings) -> list[Draft]:
@@ -321,22 +329,31 @@ def _deliver(n: m.Notification) -> None:
         n.sent, n.error = sent, error
 
 
-# ---------------------------------------------------------------------- entry point
-def process(event: m.WifiTelemetry | m.CardAccess | m.IotHealth | m.LabActivity) -> dict:
-    s = get_settings()
+# ---------------------------------------------------------------------- entry points
+def _run(events: list, s: Settings) -> dict:
+    """Process events, classifying ONCE at the end, so a burst (e.g. an uplink outage that trips
+    many APs in one batch) becomes one incident instead of several short-lived tickets."""
     with store.lock:
-        if store.seen(event.event_id):
-            return {"status": "duplicate", "event_id": event.event_id}
-        store.mark_seen(event.event_id)
-        drafts: list[Draft] = []
-        if isinstance(event, m.WifiTelemetry):
-            drafts = _on_wifi(event, s)
-        elif isinstance(event, m.CardAccess):
-            _on_card(event)
-        elif isinstance(event, m.IotHealth):
-            drafts = _on_iot(event, s)
-        else:
-            store.lab_activity.append(event)
+        accepted = duplicates = 0
+        ap_tripped = False
+        iot_locations: set[str] = set()
+        for event in events:
+            if store.seen(event.event_id):
+                duplicates += 1
+                continue
+            store.mark_seen(event.event_id)
+            accepted += 1
+            if isinstance(event, m.WifiTelemetry):
+                ap_tripped |= _on_wifi(event, s)
+            elif isinstance(event, m.CardAccess):
+                _on_card(event)
+            elif isinstance(event, m.IotHealth):
+                if _on_iot(event, s):
+                    iot_locations.add(event.location_id)
+            else:
+                store.lab_activity.append(event)
+        drafts: list[Draft] = _classify_aps(s) if ap_tripped else []
+        drafts += [_iot_draft(loc) for loc in sorted(iot_locations)]
         drafts = _merge_existing(drafts)
 
     # Outside the lock: this may call Gemini, which can take seconds.
@@ -356,9 +373,20 @@ def process(event: m.WifiTelemetry | m.CardAccess | m.IotHealth | m.LabActivity)
 
     for n in to_send:
         _deliver(n)
+    return {"accepted": accepted, "duplicates": duplicates, "tickets_opened": opened, "tickets_resolved": resolved}
+
+
+def process(event: m.WifiTelemetry | m.CardAccess | m.IotHealth | m.LabActivity) -> dict:
+    result = _run([event], get_settings())
+    if result["duplicates"]:
+        return {"status": "duplicate", "event_id": event.event_id}
     return {
         "status": "accepted",
         "event_id": event.event_id,
-        "tickets_opened": opened,
-        "tickets_resolved": resolved,
+        "tickets_opened": result["tickets_opened"],
+        "tickets_resolved": result["tickets_resolved"],
     }
+
+
+def process_batch(events: list) -> dict:
+    return _run(events, get_settings())

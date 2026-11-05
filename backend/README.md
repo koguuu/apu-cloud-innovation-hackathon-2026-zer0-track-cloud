@@ -86,3 +86,7 @@ State is in memory, so run **one instance** (`--max-instances 1`) and expect a r
 - Real Gemini calls and real Telegram delivery are covered by tests with fakes only. They need a key and a bot token to try for real.
 - Cloud Run deploy and Firestore: waiting on the billing / licence decision.
 - Lab Record (stretch): `lab_activity` events are stored, but there is no chatbot yet.
+
+## Batches
+
+`POST /events/batch` classifies once, after the whole batch is applied, so a campus-wide outage becomes one ticket and one alert. Single `POST /events` classifies after each event, and severity is raised if more APs fail later.
