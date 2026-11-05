@@ -33,6 +33,7 @@ class Settings:
     # Gemini (optional: without a key the agent uses template text)
     gemini_api_key: str
     gemini_model: str
+    gemini_fallback_model: str
     gemini_timeout_s: float
     # Telegram (optional: without these, notifications are logged and marked not sent)
     telegram_bot_token: str
@@ -55,8 +56,9 @@ def get_settings() -> Settings:
         dashboard_api_key=os.getenv("DASHBOARD_API_KEY", ""),
         cors_origins=_csv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000"),
         gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
-        gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
-        gemini_timeout_s=_float("GEMINI_TIMEOUT_S", 8.0),
+        gemini_model=os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest"),
+        gemini_fallback_model=os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash"),
+        gemini_timeout_s=_float("GEMINI_TIMEOUT_S", 20.0),
         telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", ""),
         telegram_chat_id=os.getenv("TELEGRAM_CHAT_ID", ""),
         latency_bad_ms=_float("LATENCY_BAD_MS", 150.0),

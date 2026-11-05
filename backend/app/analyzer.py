@@ -41,7 +41,7 @@ def template(d: Draft) -> tuple[str, str]:
         plural = "" if len(healthy) == 1 else "s"
         tail = f" while {len(healthy)} other AP{plural} there {'is' if len(healthy) == 1 else 'are'} healthy." if healthy else "."
         return (
-            f"{aps} in {place} show {worst['packet_loss_pct']:.0f}% packet loss and "
+            f"{aps} in {place} {'shows' if len(d.affected_aps) == 1 else 'show'} {worst['packet_loss_pct']:.0f}% packet loss and "
             f"{worst['latency_ms']:.0f} ms latency{tail}",
             f"Reboot or replace {aps}; check its switch port and power.",
         )
