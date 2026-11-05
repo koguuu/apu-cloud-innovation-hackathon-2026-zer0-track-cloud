@@ -16,6 +16,7 @@ from starlette.routing import Route
 from . import engine
 from . import models as m
 from .config import get_settings
+from .dotenv import load_dotenv
 from .health import all_zones, best_alternative, zone
 from .locations import CAPACITY
 from .privacy import find_pii_keys
@@ -244,4 +245,5 @@ def create_app() -> Starlette:
     return Starlette(routes=routes, middleware=middleware)
 
 
+load_dotenv()
 app = create_app()
