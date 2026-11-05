@@ -19,6 +19,11 @@ def _int(name: str, default: int) -> int:
         return default
 
 
+def _bool(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    return default if raw is None else raw.strip().lower() in ("1", "true", "yes", "on")
+
+
 def _csv(name: str, default: str) -> tuple[str, ...]:
     return tuple(x.strip() for x in os.getenv(name, default).split(",") if x.strip())
 
@@ -35,6 +40,7 @@ class Settings:
     gemini_model: str
     gemini_fallback_model: str
     gemini_timeout_s: float
+    enrich_background: bool
     # Telegram (optional: without these, notifications are logged and marked not sent)
     telegram_bot_token: str
     telegram_chat_id: str
@@ -59,6 +65,7 @@ def get_settings() -> Settings:
         gemini_model=os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest"),
         gemini_fallback_model=os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash"),
         gemini_timeout_s=_float("GEMINI_TIMEOUT_S", 20.0),
+        enrich_background=_bool("ENRICH_IN_BACKGROUND", True),
         telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", ""),
         telegram_chat_id=os.getenv("TELEGRAM_CHAT_ID", ""),
         latency_bad_ms=_float("LATENCY_BAD_MS", 150.0),

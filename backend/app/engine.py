@@ -12,10 +12,11 @@ Root cause rules (Gemini only writes the explanation, see analyzer.py):
 from __future__ import annotations
 
 import logging
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from typing import Optional
 
 from . import models as m
-from .analyzer import Draft, explain
+from .analyzer import Draft, explain, template
 from .config import Settings, get_settings
 from .health import best_alternative, wifi_health
 from .locations import CAPACITY, name_of
@@ -329,6 +330,42 @@ def _deliver(n: m.Notification) -> None:
         n.sent, n.error = sent, error
 
 
+# ------------------------------------------------------- Gemini enrichment (background)
+_executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="enrich")
+_pending: set[Future] = set()
+
+
+def _submit(fn, *args) -> None:
+    future = _executor.submit(fn, *args)
+    _pending.add(future)
+    future.add_done_callback(_pending.discard)
+
+
+def wait_for_enrichment(timeout: float = 30.0) -> None:
+    """Block until background Gemini jobs finish (used by tests and scripts)."""
+    wait(list(_pending), timeout=timeout)
+
+
+def _enrich(ticket_id: str, d: Draft) -> None:
+    """Replace the template text with Gemini's text. Gemini may also correct AP failure <-> congestion."""
+    try:
+        original = d.cause
+        explanation, action = explain(d)  # may change d.cause (see analyzer._maybe_override)
+        with store.lock:
+            ticket = store.tickets.get(ticket_id)
+            if ticket is None:
+                return
+            ticket.explanation, ticket.recommended_action = explanation, action
+            if d.cause != original and ticket.root_cause == original:
+                ticket.root_cause = d.cause  # type: ignore[assignment]
+                ticket.severity = _severity(d)  # type: ignore[assignment]
+                for adv in store.advisories:
+                    if adv.ticket_id == ticket_id and adv.kind == "incident":
+                        adv.message, adv.suggested_location = _advisory_message(ticket)
+    except Exception:  # never let a background job crash the server
+        log.exception("Gemini enrichment failed for %s", ticket_id)
+
+
 # ---------------------------------------------------------------------- entry points
 def _run(events: list, s: Settings) -> dict:
     """Process events, classifying ONCE at the end, so a burst (e.g. an uplink outage that trips
@@ -356,23 +393,31 @@ def _run(events: list, s: Settings) -> dict:
         drafts += [_iot_draft(loc) for loc in sorted(iot_locations)]
         drafts = _merge_existing(drafts)
 
-    # Outside the lock: this may call Gemini, which can take seconds.
-    explained = [(d, *explain(d)) for d in drafts]
+    # The ticket and the Telegram alert go out at once with template text. Gemini (which can take
+    # seconds, or fail with a 503) then improves the explanation in the background.
+    prepared = [(d, *template(d)) for d in drafts]
 
     opened: list[str] = []
     to_send: list[m.Notification] = []
+    to_enrich: list[tuple[str, Draft]] = []
     with store.lock:
-        for d, explanation, action in explained:
+        for d, explanation, action in prepared:
             made = _open_ticket(d, explanation, action)
             if made:
                 opened.append(made[0].ticket_id)
                 to_send.append(made[2])
+                to_enrich.append((made[0].ticket_id, d))
         recovered = _apply_recoveries()
         to_send += [n for _, n in recovered]
         resolved = [t.ticket_id for t, _ in recovered]
 
     for n in to_send:
         _deliver(n)
+    for ticket_id, d in to_enrich:
+        if s.enrich_background:
+            _submit(_enrich, ticket_id, d)
+        else:
+            _enrich(ticket_id, d)
     return {"accepted": accepted, "duplicates": duplicates, "tickets_opened": opened, "tickets_resolved": resolved}
 
 

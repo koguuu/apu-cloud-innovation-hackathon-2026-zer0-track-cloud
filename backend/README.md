@@ -62,6 +62,7 @@ curl -s localhost:8000/state
 - Root cause rules: many APs bad at once across 2+ locations means `isp_uplink_outage` (campus-wide, replaces per-AP tickets). Bad APs with many clients, low loss and good signal means `congestion`. Other bad APs mean `ap_hardware_failure`. An IoT device reporting `down` means `iot_device_fault`.
 - Opening a ticket also creates a student advisory (pointing to the best healthy lab with free seats) and an admin notification. When readings recover, the ticket auto-resolves and a recovery advisory is posted.
 - `seats_free` = capacity minus students currently inside (a student is in one place at a time).
+- **Alerts never wait for Gemini.** The ticket, the advisory and the Telegram alert go out immediately with template text. Gemini then replaces the explanation and recommended action a few seconds later in the background (and may correct AP failure <-> congestion). Set `ENRICH_IN_BACKGROUND=0` to run Gemini inline instead.
 - Gemini is optional. Without `GEMINI_API_KEY` the explanation comes from a template. Models: `GEMINI_MODEL` (default `gemini-flash-lite-latest`) with `GEMINI_FALLBACK_MODEL` (default `gemini-3.5-flash`); each is retried once on a 429/500/503. Model availability changes, so check `GEMINI_MODEL` first if explanations turn into template text.
 
 ## Security and privacy
