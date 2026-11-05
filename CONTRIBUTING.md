@@ -9,7 +9,7 @@
 5. Push your branch: `git push -u origin yourname/short-feature`
 6. Open a **Pull Request** on GitHub into `main`.
 7. Tag a teammate to check it. Keep reviews fast (same day).
-8. After it's checked, **merge** it. Then everyone runs `git pull` on `main`.
+8. After it's checked, use **Squash and merge**. Then everyone runs `git pull` on `main`.
 
 ## Rules
 
@@ -19,5 +19,7 @@
 - Feature freeze: **8 Nov**. After that, only fixes, polish, deck and demo video.
 
 ## Commit messages
+
+Commit under your own name (`git config user.name` / `user.email`).
 
 Short and clear: `add AP fault injection script`, `fix ticket JSON field name`.

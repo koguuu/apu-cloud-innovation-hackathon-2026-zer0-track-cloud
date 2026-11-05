@@ -3,8 +3,8 @@
 This is the one format everyone builds against so we can work in parallel.
 **Change it only after telling the group.** All timestamps are ISO 8601 UTC.
 
-Core (Campus Health) uses `wifi_telemetry`, `card_access`, `iot_health`, `ticket`, `advisory`, `notification` and `zone_status`.
-Stretch (Lab Record) uses `lab_activity` and `career_suggestion`.
+Campus Health uses `wifi_telemetry`, `card_access`, `iot_health`, `ticket`, `advisory`, `notification` and `zone_status`.
+`lab_activity` (stretch) is accepted and stored. The source of truth is `backend/app/models.py`.
 
 ## Locations
 
@@ -90,7 +90,7 @@ Access points use ids like `ap-b-02` (block, number).
 
 `lab_type`: `ai`, `cybersecurity`, `networking`, `iot`. `status`: `started`, `in_progress`, `completed`.
 
-## Output objects (agent / backend -> frontend)
+## Output objects (backend -> frontend)
 
 ### `ticket`
 
@@ -122,7 +122,7 @@ Access points use ids like `ap-b-02` (block, number).
 }
 ```
 
-### `notification` (agent -> Telegram sender)
+### `notification` (backend -> Telegram)
 
 ```json
 {
@@ -152,34 +152,7 @@ Access points use ids like `ap-b-02` (block, number).
 
 `wifi_health`: `good`, `degraded`, `down`. `score`: 0 to 1, higher means a better place to be right now.
 
-### `career_suggestion` (stretch)
-
-```json
-{
-  "student_hash": "s_9f2c41ab",
-  "generated_at": "2026-11-05T12:30:00Z",
-  "hours_by_lab": { "ai": 5.0, "cybersecurity": 0.5, "networking": 2.0 },
-  "top_matches": [
-    { "role": "Cloud Infrastructure Engineer", "fit": 0.82 },
-    { "role": "IoT Security Analyst", "fit": 0.74 }
-  ],
-  "recommended_certs": ["Google Cloud Associate Cloud Engineer", "CompTIA Network+"],
-  "skills_to_gain": ["Linux", "Networking fundamentals", "IAM and cloud security"],
-  "plan_6_months": [
-    "Month 1-2: networking fundamentals and Linux",
-    "Month 3-4: cloud basics and hands-on labs",
-    "Month 5-6: certification prep and a portfolio project"
-  ],
-  "flagged_minutes": 30,
-  "disclaimer": "This is a suggestion based on lab activity, not a final decision."
-}
-```
-
-`flagged_minutes`: minutes excluded because the lab had an outage ticket in that window.
-
-## Additions made by the backend
-
-These extra fields exist in what the backend returns (`backend/app/models.py` is the source of truth):
+## Extra fields the backend returns
 
 - `ticket`: also has `affected_devices` (IoT device ids), `resolved_at`, `resolution_note`. `status` is `open` or `resolved`. `location_id` is `campus` for an uplink outage.
 - `advisory`: also has `kind` (`incident` or `recovery`) and `ticket_id`.
@@ -187,3 +160,4 @@ These extra fields exist in what the backend returns (`backend/app/models.py` is
 - `zone_status`: also has `name` and `iot_devices_down`. `wifi_health` can be `unknown` when no probe has reported for that location yet.
 - Events must **not** contain raw identifiers (`student_id`, `name`, `email`, ...). They are rejected with HTTP 422. Use `student_hash`, which looks like `s_` plus 8 to 64 hex characters.
 - A flag trips after 3 bad readings in a row and clears after 3 good ones.
+- `POST /events/batch` returns `accepted`, `duplicates`, `rejected`, `tickets_opened` and `tickets_resolved`. It classifies once after the whole batch is applied.

@@ -1,69 +1,48 @@
 # Architecture
 
-## Overview
-
-One data pipeline. The **core** is Campus Health. **Lab Record** is a stretch module that reads the same card-reader data. Everything at the edge is simulated, so the prototype needs no hardware.
+What is built today. Everything at the edge is simulated, so the prototype needs no hardware or cloud account.
 
 ```mermaid
 flowchart LR
-  subgraph SIM["IoT + Network layer (simulated)"]
-    P[Wi-Fi / IoT probes<br/>Block A, Block B, labs]
-    C[Card reader logs]
-  end
-  P --> I[Ingest API / Pub/Sub]
-  C --> I
-  I --> B[Backend - Cloud Run / Starlette]
-  B --> DB[(Firestore)]
-  B --> G[Gemini agent]
-  G --> DB
-  G --> TG[Telegram alert to admin]
-  DB --> S[Student web app]
-  DB --> T[Staff dashboard]
-  subgraph STRETCH["Stretch: Lab Record"]
-    L[Lab hours + modules] --> CB[Gemini chatbot]
-  end
-  C -.-> L
-  CB -.-> S
+  SIM[simulator/] -->|POST /events/batch| API[backend/app/main.py]
+  API --> E[engine.py<br/>detection + root cause]
+  E --> A[analyzer.py<br/>Gemini explanation, template fallback]
+  A --> O[ticket, advisory, notification]
+  O --> N[notifier.py<br/>Telegram]
+  API -->|GET /state, /zones, /tickets| UI[frontend]
 ```
 
 ## Components
 
-| Component | Owner | Responsibility |
+| Component | Where | Responsibility |
 |---|---|---|
-| `simulator/` | Raja | Generates Wi-Fi/IoT telemetry and card events. Has a fault-injection command for the demo. |
-| `backend/` | Koguleswaraan | Ingest endpoint, storage, `zone_status`, wiring, Cloud Run, auth and secrets. |
-| `agent/` | Htet Win | Detects anomalies, root-cause analysis with Gemini, generates tickets, advisories and notifications. |
-| `career/` | Pang Zai Jie | Telegram `send_alert`, occupancy from card events, pitch. Stretch: Lab Record chatbot. |
-| `frontend/` | Pang Zai Yong | Student page (which labs are free and working) and staff dashboard. Stretch: chatbot panel. |
+| Simulator | `simulator/` | Generates Wi-Fi, IoT and card events every tick. Fault commands for the demo (kill an AP, degrade a block, lab down, congestion, IoT fault, uplink outage). |
+| Backend API | `backend/app/main.py` | Ingest endpoints, read endpoints for the frontend, API-key checks, CORS. |
+| Detection and root cause | `backend/app/engine.py` | Trips a flag after 3 bad readings in a row, classifies the cause, opens, merges and auto-resolves tickets. |
+| Explanation | `backend/app/analyzer.py`, `llm.py` | Gemini writes the explanation and recommended action. Retries once on overload, falls back to a second model, then to a template. |
+| Lab status | `backend/app/health.py` | Seats free (from card events) plus Wi-Fi/IoT health gives a score per location, and the best lab right now. |
+| Alerts | `backend/app/notifier.py` | Telegram delivery. Shows `sent=false` and the error if Telegram is not configured. |
+| Privacy and security | `privacy.py`, `security.py` | Hashed student ids, rejection of raw identifiers, API keys. |
 
-## Flows
+## Flow
 
-### 1. Campus Health loop (core)
-1. Probes send `wifi_telemetry` and `iot_health` events every few seconds.
-2. Backend stores them and checks thresholds (latency, packet loss, RSSI, device status).
-3. On a breach, the agent gets recent events from nearby APs and decides: **AP hardware failure**, **ISP / uplink outage**, **congestion** or **IoT device fault**. One AP bad while neighbours are fine means hardware; many APs bad together means uplink.
-4. The agent writes a `ticket`, a student `advisory` and a `notification`.
-5. The Telegram sender delivers the `notification` to the admin.
-6. The dashboard and student page update.
+1. The simulator sends one batch per tick to `POST /events/batch`.
+2. The backend applies the whole batch, then classifies once, so a campus-wide outage becomes one ticket and one alert.
+3. Root cause rules:
+   - many APs bad at once across 2+ locations → `isp_uplink_outage` (campus-wide, replaces per-AP tickets)
+   - bad APs with many clients, low loss and good signal → `congestion`
+   - other bad APs → `ap_hardware_failure`
+   - an IoT device reporting `down` → `iot_device_fault`
+4. Gemini writes the explanation. The ticket, a student advisory (pointing to the best healthy lab with free seats) and an admin notification are created, and Telegram delivers the alert.
+5. When readings are normal for 3 readings in a row, the ticket auto-resolves and a recovery advisory is posted.
+6. The frontend reads everything from `GET /state`.
 
-### 2. Which labs are free and working (core)
-1. `card_access` events update seats free per location.
-2. Seats free are combined with Wi-Fi/IoT health into a `zone_status` for each lab and block.
-3. The student page ranks them and shows the best lab right now, and why.
+## Storage
 
-### 3. Lab Record chatbot (stretch)
-1. `lab_activity` events are aggregated per anonymised student (hours per lab, modules completed).
-2. Gemini answers "what should I pursue next?" using only that student's data.
-3. Rule: if a lab had an outage ticket, minutes spent elsewhere in that window are flagged as unreliable.
-4. Shown as an opt-in suggestion.
-
-## Cloud services (proposed)
-
-- Cloud Run (backend + agent), Firestore (state), Pub/Sub (optional event stream), Gemini via Vertex AI or the Gemini API, Telegram Bot API for alerts.
-- Keep it simple. If a service slows us down, fall back to plain HTTP endpoints plus Firestore.
+State is held in memory in one backend instance (`backend/app/store.py`). It resets when the server restarts.
 
 ## Security and privacy
 
-- Simulated data only. Student identifiers are hashed (`student_hash`).
-- Secrets (Gemini key, Telegram token) in environment variables, never in git.
-- Career guidance is a suggestion with an opt-in screen.
+- Simulated data only. Students are identified only by `student_hash`.
+- `X-API-Key` protects writes (`INGEST_API_KEY`) and reads (`DASHBOARD_API_KEY`). With `APP_ENV=production` the server will not start without both.
+- Secrets (Gemini key, Telegram token) are environment variables or `.env`, never in git.

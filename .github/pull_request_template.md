@@ -8,7 +8,7 @@
 - [ ] agent
 - [ ] backend
 - [ ] frontend
-- [ ] career
+- [ ] telegram / pitch
 - [ ] docs
 
 ## How to test
