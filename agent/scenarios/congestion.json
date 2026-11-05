@@ -1,0 +1,17 @@
+{
+  "name": "congestion",
+  "description": "Block A APs are overloaded: many clients, high latency, but almost no packet loss and good signal.",
+  "rule_cause": "congestion",
+  "expected_cause": "congestion",
+  "location_id": "block-a",
+  "affected_aps": ["ap-a-01", "ap-a-02"],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {"ap_id": "ap-a-01", "location_id": "block-a", "latency_ms": 310, "packet_loss_pct": 1.2, "rssi_dbm": -52, "clients": 96},
+      {"ap_id": "ap-a-02", "location_id": "block-a", "latency_ms": 280, "packet_loss_pct": 0.9, "rssi_dbm": -55, "clients": 88}
+    ],
+    "healthy_neighbours": [],
+    "total_aps": 7
+  }
+}

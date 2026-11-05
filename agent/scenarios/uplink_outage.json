@@ -1,0 +1,18 @@
+{
+  "name": "uplink_outage",
+  "description": "Four APs in three different locations degrade at the same moment: a shared uplink / ISP problem.",
+  "rule_cause": "isp_uplink_outage",
+  "expected_cause": "isp_uplink_outage",
+  "location_id": "campus",
+  "affected_aps": ["ap-a-01", "ap-b-02", "ap-cy-01", "ap-net-01"],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {"ap_id": "ap-a-01", "location_id": "block-a", "latency_ms": 1200, "packet_loss_pct": 70, "rssi_dbm": -58, "clients": 40},
+      {"ap_id": "ap-b-02", "location_id": "block-b", "latency_ms": 1100, "packet_loss_pct": 65, "rssi_dbm": -61, "clients": 35},
+      {"ap_id": "ap-cy-01", "location_id": "lab-cyber", "latency_ms": 1300, "packet_loss_pct": 80, "rssi_dbm": -54, "clients": 18},
+      {"ap_id": "ap-net-01", "location_id": "lab-network", "latency_ms": 1250, "packet_loss_pct": 75, "rssi_dbm": -56, "clients": 22}
+    ],
+    "total_aps": 7
+  }
+}

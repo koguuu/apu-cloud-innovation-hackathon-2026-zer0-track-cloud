@@ -1,0 +1,16 @@
+{
+  "name": "iot_fault",
+  "description": "Two IoT devices in the IoT Lab report down while Wi-Fi there is healthy.",
+  "rule_cause": "iot_device_fault",
+  "expected_cause": "iot_device_fault",
+  "location_id": "lab-iot",
+  "affected_aps": [],
+  "affected_devices": ["reader-iot-01", "sensor-iot-04"],
+  "evidence": {
+    "devices": [
+      {"device_id": "reader-iot-01", "device_type": "card_reader", "status": "down"},
+      {"device_id": "sensor-iot-04", "device_type": "sensor", "status": "down"}
+    ],
+    "wifi_health": "good"
+  }
+}
