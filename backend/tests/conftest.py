@@ -20,6 +20,7 @@ def sent(monkeypatch):
     """Clean env + state for every test. Returns the list of notifications 'delivered'."""
     for key in ENV_KEYS:
         monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("ENRICH_IN_BACKGROUND", "0")  # tests run Gemini inline; see test_fast_alerts.py
     store.reset()
     delivered = []
     notifier.set_sender(lambda n: delivered.append(n) or True)

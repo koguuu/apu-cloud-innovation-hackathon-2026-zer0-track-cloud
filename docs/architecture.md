@@ -33,7 +33,7 @@ flowchart LR
    - bad APs with many clients, low loss and good signal → `congestion`
    - other bad APs → `ap_hardware_failure`
    - an IoT device reporting `down` → `iot_device_fault`
-4. Gemini writes the explanation. The ticket, a student advisory (pointing to the best healthy lab with free seats) and an admin notification are created, and Telegram delivers the alert.
+4. The ticket, a student advisory (pointing to the best healthy lab with free seats) and an admin notification are created at once with template text, and Telegram delivers the alert. Gemini then improves the explanation in the background.
 5. When readings are normal for 3 readings in a row, the ticket auto-resolves and a recovery advisory is posted.
 6. The frontend reads everything from `GET /state`.
 
