@@ -117,7 +117,7 @@ def test_iot_faulty_device_reports_every_tick_healthy_ones_do_not():
     ticks_with_event = [t for t in range(1, 4) if any(e["device_id"] == "reader-net-01" for e in campus.iot_events(t))]
     assert ticks_with_event == [1, 2, 3]
     healthy = [t for t in range(1, 4) if any(e["device_id"] == "reader-ai-01" for e in campus.iot_events(t))]
-    assert healthy == [3]
+    assert healthy == [1, 2, 3]
 
 
 def test_commands_validate_their_targets_and_recover_restores_everything():

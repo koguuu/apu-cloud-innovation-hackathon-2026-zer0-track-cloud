@@ -115,6 +115,6 @@ def load_settings() -> Settings:
         tick_seconds=max(0.1, number("SIM_TICK_SECONDS", 2.0)),
         day_seconds=max(10.0, number("SIM_DAY_SECONDS", 240.0)),
         start_hour=min(20.9, max(7.0, number("SIM_START_HOUR", 9.5))),
-        blip_prob=min(1.0, max(0.0, number("SIM_BLIP_PROB", 0.01))),
+        blip_prob=min(1.0, max(0.0, number("SIM_BLIP_PROB", 0.0))),
         seed=int(seed_text) if seed_text.lstrip("-").isdigit() else None,
     )
