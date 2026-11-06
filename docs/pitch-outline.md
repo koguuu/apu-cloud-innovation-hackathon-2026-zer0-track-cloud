@@ -2,6 +2,8 @@
 
 Owner: Pang Zai Jie (everyone reviews). Format: **PDF, max 10 MB**. Judging criteria were not published yet, so update this when they are.
 
+> **Full slide content is in [pitch-deck.md](pitch-deck.md).** Export that file to PDF using your presentation tool of choice. The outline below is kept as a quick reference.
+
 **Product:** Smart Lab Companion (working title)
 **Line:** "From finding a working lab to knowing what to learn next, one companion for every student's lab journey."
 
