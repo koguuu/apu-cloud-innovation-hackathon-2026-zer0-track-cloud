@@ -112,3 +112,29 @@ def test_template_congestion_has_vs_have():
     two, _ = analyzer.template(_template_draft("congestion", ["ap-b-01", "ap-b-02"]))
     assert "ap-b-01 in" in one and " has high latency" in one
     assert " have high latency" in two
+
+
+# ---- Gemini text must never contradict the ticket's cause ----
+def test_text_discarded_when_gemini_disagrees_and_cause_is_kept(monkeypatch):
+    _fake(monkeypatch, root_cause="ap_hardware_failure", confidence="high",
+          explanation="Replace the failing AP hardware.", recommended_action="Dispatch a technician.")
+    d = _ap_draft("isp_uplink_outage")
+    explanation, action = explain(d)
+    assert d.cause == "isp_uplink_outage"
+    assert "Replace the failing AP" not in explanation and "technician" not in action
+    assert "uplink" in explanation.lower()
+
+
+def test_text_kept_when_override_applied(monkeypatch):
+    _fake(monkeypatch, root_cause="congestion", confidence="high",
+          explanation="High load, low loss.", recommended_action="Balance clients.")
+    d = _ap_draft("ap_hardware_failure")
+    assert explain(d) == ("High load, low loss.", "Balance clients.") and d.cause == "congestion"
+
+
+def test_text_discarded_when_low_confidence_disagreement(monkeypatch):
+    _fake(monkeypatch, root_cause="congestion", confidence="medium",
+          explanation="It is congestion.", recommended_action="Add capacity.")
+    d = _ap_draft("ap_hardware_failure")
+    explanation, _ = explain(d)
+    assert d.cause == "ap_hardware_failure" and "It is congestion." not in explanation

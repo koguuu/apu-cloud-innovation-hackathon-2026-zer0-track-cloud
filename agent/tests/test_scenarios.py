@@ -51,6 +51,7 @@ def test_uplink_cannot_be_overridden(monkeypatch):
     sc = next(s for s in SCENARIOS if s["name"] == "uplink_outage")
     r = evaluate.run_scenario(sc, analyzer)
     assert r["gemini"] == "ap_hardware_failure" and r["final"] == "isp_uplink_outage"
+    assert r["source"] == "template (Gemini text discarded)"
 
 
 def test_no_gemini_falls_back_to_template(monkeypatch):
@@ -68,3 +69,25 @@ def test_scenarios_are_not_modified_between_runs(monkeypatch):
     before = json.dumps(sc, sort_keys=True)
     evaluate.run_scenario(sc, analyzer)
     assert json.dumps(sc, sort_keys=True) == before
+
+
+def test_unsupported_numbers_lint():
+    ev = {"tripped": [{"latency_ms": 420, "packet_loss_pct": 1.5, "rssi_dbm": -54, "clients": 52}]}
+    ok = "Latency is 420 ms, loss only 1.5% and signal -54 dBm, well under the 5% limit."
+    bad = "Congestion ruled out: signal is worse than the -70 dBm threshold, loss below 3%."
+    assert evaluate.unsupported_numbers(ok, ev) == []
+    found = evaluate.unsupported_numbers(bad, ev)
+    assert "-70 dBm" in found and "3 %" in found and 'the word "threshold"' in found
+
+
+def test_flagged_runs_are_printed_in_full(monkeypatch, capsys):
+    analyzer = evaluate.import_analyzer()
+    monkeypatch.setenv("GEMINI_API_KEY", "x")
+    reply = json.dumps({"root_cause": "ap_hardware_failure", "confidence": "high",
+                        "explanation": "Congestion ruled out: worse than the -70 dBm threshold.",
+                        "recommended_action": "Replace ap-b-02."})
+    monkeypatch.setattr(analyzer.llm, "call_gemini", lambda p, *, json_mode=False: reply)
+    evaluate.main(["--delay", "0", "--runs", "2", "ap_failure"])
+    out = capsys.readouterr().out
+    assert "Flagged explanations" in out and out.count("[ap_failure] not in evidence") == 2
+    assert "-70 dBm" in out and "Explanations citing numbers/thresholds not in the evidence: 2/2" in out

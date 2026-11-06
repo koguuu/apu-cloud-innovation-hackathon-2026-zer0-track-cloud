@@ -126,7 +126,13 @@ def _gemini(d: Draft) -> Optional[tuple[str, str]]:
         return None
     if not (explanation and action):
         return None
-    _maybe_override(d, data.get("root_cause"), data.get("confidence"))
+    cause = data.get("root_cause")
+    _maybe_override(d, cause, data.get("confidence"))
+    if cause in KNOWN_CAUSES and cause != d.cause:
+        # The ticket keeps a different cause than Gemini argued for, so its text would contradict the
+        # ticket (e.g. "replace the AP hardware" on an uplink outage). Use the template instead.
+        log.info("Gemini text discarded: written for %s, ticket cause is %s", cause, d.cause)
+        return None
     return explanation, action
 
 

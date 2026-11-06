@@ -1,0 +1,16 @@
+{
+  "name": "uplink_two_locations",
+  "description": "Held-out: only 2 APs, in 2 different locations, degrade together with high loss but strong signal. A shared uplink problem, not 2 dead APs.",
+  "rule_cause": "isp_uplink_outage",
+  "expected_cause": "isp_uplink_outage",
+  "location_id": "campus",
+  "affected_aps": ["ap-a-02", "ap-net-01"],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {"ap_id": "ap-a-02", "location_id": "block-a", "latency_ms": 980, "packet_loss_pct": 55, "rssi_dbm": -52, "clients": 44},
+      {"ap_id": "ap-net-01", "location_id": "lab-network", "latency_ms": 1010, "packet_loss_pct": 60, "rssi_dbm": -49, "clients": 21}
+    ],
+    "total_aps": 7
+  }
+}

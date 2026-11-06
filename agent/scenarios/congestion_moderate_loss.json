@@ -1,0 +1,17 @@
+{
+  "name": "congestion_moderate_loss",
+  "description": "Held-out: two Block B APs overloaded (high clients and latency) with some loss (2.5%) but strong signal. Load, not hardware.",
+  "rule_cause": "congestion",
+  "expected_cause": "congestion",
+  "location_id": "block-b",
+  "affected_aps": ["ap-b-01", "ap-b-03"],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {"ap_id": "ap-b-01", "location_id": "block-b", "latency_ms": 270, "packet_loss_pct": 2.5, "rssi_dbm": -58, "clients": 92},
+      {"ap_id": "ap-b-03", "location_id": "block-b", "latency_ms": 255, "packet_loss_pct": 2.1, "rssi_dbm": -61, "clients": 85}
+    ],
+    "healthy_neighbours": [],
+    "total_aps": 7
+  }
+}
