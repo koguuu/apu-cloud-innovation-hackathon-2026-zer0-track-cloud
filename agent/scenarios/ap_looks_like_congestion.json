@@ -1,17 +1,33 @@
 {
   "name": "ap_looks_like_congestion",
-  "description": "TRICKY: the rules said AP failure (client count is below their congestion cut-off), but the numbers look like congestion: high latency, loss under 2%, strong signal. Shows where Gemini can correct the rules.",
+  "description": "HARD CASE: the rules said AP failure (client count is below their congestion cut-off), but the numbers look like congestion: high latency, loss under 2%, strong signal. Used to test whether Gemini can correct the rules; with prompt v1 it missed 0/3.",
   "rule_cause": "ap_hardware_failure",
   "expected_cause": "congestion",
   "location_id": "block-a",
-  "affected_aps": ["ap-a-03"],
+  "affected_aps": [
+    "ap-a-03"
+  ],
   "affected_devices": [],
   "evidence": {
     "tripped": [
-      {"ap_id": "ap-a-03", "location_id": "block-a", "latency_ms": 420, "packet_loss_pct": 1.5, "rssi_dbm": -54, "clients": 52}
+      {
+        "ap_id": "ap-a-03",
+        "location_id": "block-a",
+        "latency_ms": 420,
+        "packet_loss_pct": 1.5,
+        "rssi_dbm": -54,
+        "clients": 52
+      }
     ],
     "healthy_neighbours": [
-      {"ap_id": "ap-a-01", "location_id": "block-a", "latency_ms": 38, "packet_loss_pct": 0.5, "rssi_dbm": -58, "clients": 14}
+      {
+        "ap_id": "ap-a-01",
+        "location_id": "block-a",
+        "latency_ms": 38,
+        "packet_loss_pct": 0.5,
+        "rssi_dbm": -58,
+        "clients": 14
+      }
     ],
     "total_aps": 7
   }

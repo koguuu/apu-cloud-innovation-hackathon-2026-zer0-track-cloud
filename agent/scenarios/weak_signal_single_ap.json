@@ -1,0 +1,18 @@
+{
+  "name": "weak_signal_single_ap",
+  "description": "Held-out: one AP with very weak signal and few clients but only moderate loss; its neighbours are healthy. Hardware or placement fault, not load.",
+  "rule_cause": "ap_hardware_failure",
+  "expected_cause": "ap_hardware_failure",
+  "location_id": "lab-cyber",
+  "affected_aps": ["ap-cy-02"],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {"ap_id": "ap-cy-02", "location_id": "lab-cyber", "latency_ms": 210, "packet_loss_pct": 3.2, "rssi_dbm": -88, "clients": 4}
+    ],
+    "healthy_neighbours": [
+      {"ap_id": "ap-cy-01", "location_id": "lab-cyber", "latency_ms": 22, "packet_loss_pct": 0.3, "rssi_dbm": -55, "clients": 17}
+    ],
+    "total_aps": 7
+  }
+}
