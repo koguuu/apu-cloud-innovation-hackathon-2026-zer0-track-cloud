@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 import logging
+import re
+import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Callable, Optional
@@ -83,6 +85,8 @@ def _build_html(n: m.Notification) -> Optional[str]:
         ticket_id = first
         sev_tag, _, body = remainder.partition("] ")
         severity = sev_tag.lstrip("[").lower()   # e.g. "high"
+        if not re.fullmatch(r"T-\d+", ticket_id) or severity not in _SEVERITY_EMOJI:
+            return None  # not an incident message: send the original text as it is
         emoji = _SEVERITY_EMOJI.get(severity, "⚠️")
 
         location_part, _, action_part = body.partition(". Action: ")
@@ -139,9 +143,12 @@ def _telegram(n: m.Notification) -> tuple[bool, Optional[str]]:
         # 1. Try a rich HTML message.
         html = _build_html(n)
         if html:
-            data = _send_raw(api_base, {**base_params, "text": html, "parse_mode": "HTML"})
-            if data.get("ok"):
-                return True, None
+            try:
+                data = _send_raw(api_base, {**base_params, "text": html, "parse_mode": "HTML"})
+                if data.get("ok"):
+                    return True, None
+            except urllib.error.HTTPError as exc:  # e.g. 400 "can't parse entities": use plain text
+                log.warning("Telegram rejected the formatted message (HTTP %s), sending plain text", exc.code)
 
         # 2. Fall back to the original plain text.
         data = _send_raw(api_base, {**base_params, "text": n.text})

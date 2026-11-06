@@ -113,6 +113,48 @@ def test_telegram_success(monkeypatch):
     assert "chat_id=42" in seen["data"] and "hello+admin" in seen["data"]
 
 
+def _telegram_env(monkeypatch):
+    notifier.set_sender(None)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:abc")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+
+
+def _alert(text):
+    return m.Notification(notification_id="N-1", created_at="t", ticket_id="T-0001", text=text)
+
+
+def test_incident_and_recovery_are_formatted(monkeypatch):
+    _telegram_env(monkeypatch)
+    sent = []
+
+    def fake_urlopen(req, timeout=None):
+        sent.append(req.data.decode())
+        return FakeResponse({"ok": True})
+
+    monkeypatch.setattr(notifier.urllib.request, "urlopen", fake_urlopen)
+    notifier.send_notification(_alert("T-0001 [HIGH] Block B: AP hardware failure (ap-b-02). Action: Reboot ap-b-02."))
+    notifier.send_notification(_alert("T-0001 [RESOLVED] Block B: AP hardware failure cleared."))
+    assert all("parse_mode=HTML" in body for body in sent)
+    assert "Smart+Lab+Alert" in sent[0] and "T-0001" in sent[0]
+    assert "RESOLVED" in sent[1]
+
+
+def test_html_rejected_with_400_falls_back_to_plain_text(monkeypatch):
+    _telegram_env(monkeypatch)
+    bodies = []
+
+    def fake_urlopen(req, timeout=None):
+        bodies.append(req.data.decode())
+        if "parse_mode" in bodies[-1]:
+            raise urllib.error.HTTPError(req.full_url, 400, "Bad Request", {}, None)
+        return FakeResponse({"ok": True})
+
+    monkeypatch.setattr(notifier.urllib.request, "urlopen", fake_urlopen)
+    text = "T-0001 [HIGH] Block B: AP hardware failure (ap-b-02). Action: Reboot ap-b-02."
+    assert notifier.send_notification(_alert(text)) == (True, None)
+    assert len(bodies) == 2 and "parse_mode" not in bodies[1]
+
+
 def test_telegram_failure_never_leaks_the_token(monkeypatch, caplog):
     notifier.set_sender(None)
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:secret-token")
