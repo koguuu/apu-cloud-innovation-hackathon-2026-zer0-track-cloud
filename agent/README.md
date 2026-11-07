@@ -61,7 +61,7 @@ Run `evaluate.py` after every prompt change to see whether the behaviour got bet
 | v1 | 5 | 12/15 | 12/15 | `ap_looks_like_congestion` missed 0/3: Gemini kept "AP failure" (anchored on the rule's guess) and argued backwards |
 | v2 | 5 | 12/15 | 15/15 | Fixed that scenario (3/3), but Gemini called `uplink_outage` "AP hardware" 3/3. The guard rail kept the uplink cause, yet its text said "replace the AP hardware" |
 | v3 | 8 | 24/24 (15/15 on the original 5) | 24/24 | Rules alone: 21/24 (they miss the hard case). Gemini overrode the rules 3 times, all on `ap_looks_like_congestion`, all correct. Guard rails blocked nothing. Gemini's text was used in all 24 tickets |
-| v3.1 | 8 | 24/24 (3 full runs) | 24/24 | Rules alone 21/24. 3 overrides, all on `ap_looks_like_congestion`, all correct; nothing blocked; Gemini text used in 24/24 tickets. Explanations flagged for numbers not in the evidence: 1/24, 3/24 and 2/24 in three runs of the same prompt (one of the 2 in the third run was a false positive of the check) (v3: 3 of the 8 texts inspected). The 3 flagged in the second run were cue numbers: "-70 dBm" twice (`weak_signal_single_ap`) and "under 3%" once (`congestion_moderate_loss`). One 503 per run, cleared by the retry; no 429s in the last two runs |
+| v3.1 | 8 | 24/24 (4 full runs) | 24/24 | Rules alone 21/24. 3 overrides, all on `ap_looks_like_congestion`, all correct; nothing blocked; Gemini text used in 24/24 tickets. Explanations flagged for numbers not in the evidence: 1/24, 3/24, 2/24 and 0/24 in four runs of the same prompt, 6 of 96 in total (one of the 2 in the third run was a false positive of the check; v3 had 3 of the 8 texts inspected). The 3 flagged in the second run were cue numbers: "-70 dBm" twice (`weak_signal_single_ap`) and "under 3%" once (`congestion_moderate_loss`). A single 503 in each of the first two runs, cleared by the retry; no errors in runs 3 and 4; no 429s in any v3.1 run |
 
 Read this carefully:
 - The 3 added scenarios (`uplink_two_locations`, `weak_signal_single_ap`, `congestion_moderate_loss`) were written to the
@@ -103,8 +103,8 @@ Copy a file in `scenarios/`, change the numbers and `expected_cause`, run `pytes
 - LLM answers vary between runs. Use `--runs 3` or more before quoting a result.
 - Gemini cannot yet decide uplink vs AP failure or change IoT tickets (see guard rails). That needs a change in `engine.py`.
 - v3 explanations sometimes quoted the prompt's rule-of-thumb numbers ("below 3%", "the -70 dBm threshold") as if they
-  were system thresholds. v3.1 forbids this and reduced it, but did not remove it: 1/24 and 3/24 explanations were
-  flagged in two runs. `evaluate.py` prints a `CHECK:` line and a summary count for any explanation with a measurement
+  were system thresholds. v3.1 forbids this and reduced it, but did not remove it: 1/24, 3/24, 2/24 and 0/24 explanations
+  were flagged in four runs (6 of 96). `evaluate.py` prints a `CHECK:` line and a summary count for any explanation with a measurement
   that is not in the evidence or that says "threshold". It is a lint, not proof: it does not catch wrong reasoning.
 - Likely cause and follow-up (v3.2, not built): "-70 dBm" and "3%" are our own numbers in the prompt; the monitor's
   real limits are 5% and -80 dBm. Rewriting the cues relative to the real limits would leave nothing invented to quote.
