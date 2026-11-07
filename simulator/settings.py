@@ -37,6 +37,7 @@ AP_LAYOUT = {
     "lab-cyber": ["ap-cyber-01", "ap-cyber-02"],
     "lab-network": ["ap-net-01", "ap-net-02"],
     "lab-iot": ["ap-iot-01", "ap-iot-02"],
+    "library": ["ap-lib-01", "ap-lib-02"],
 }
 AP_LOCATION = {ap: loc for loc, aps in AP_LAYOUT.items() for ap in aps}
 ALL_APS = list(AP_LOCATION)
