@@ -79,7 +79,7 @@ def test_congestion_matches_the_backends_congestion_rule():
 def test_uplink_breaks_every_ap():
     campus, _ = make_campus()
     campus.uplink_outage()
-    assert all(mode == "dead" for mode in campus.ap_mode.values())   # 14 of 14, well above the 60% rule
+    assert all(mode == "dead" for mode in campus.ap_mode.values())   # every AP (library included), well above the 60% rule
 
 
 def test_card_events_replay_cleanly_and_respect_capacity():

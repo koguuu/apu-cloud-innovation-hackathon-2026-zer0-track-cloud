@@ -53,7 +53,7 @@ Tickets resolve after 3 good readings, so keep the simulator running after `reco
 
 ## What it simulates
 
-- **Layout:** 3 APs in each block, 2 in each lab (14 in total), unique ids (`ap-a-01`, `ap-ai-01`, ...). 7 IoT devices (4 card readers, 1 sensor, 2 switches).
+- **Layout:** 3 APs in each block, 2 in each lab, 2 in the library (16 in total), unique ids (`ap-a-01`, `ap-ai-01`, ...). 7 IoT devices (4 card readers, 1 sensor, 2 switches).
 - **Day pattern:** one simulated day (07:00 to 21:00) lasts 240 real seconds, with peaks at 10:30 and 15:00. Block clients per AP peak near 85, labs fill to at most 90% so there is always a free seat.
 - **Noise:** normal readings stay inside latency < 110 ms, loss < 2.5%, RSSI > -72 dBm. Random one-reading blips are off by default (`SIM_BLIP_PROB=0`). Turn them on to test noise, but a blip right before a campus-wide fault can open one extra short-lived ticket.
 - **Card events:** 220 fake students with ids like `s_9f2c41ab12`. Labs fill and empty with the day pattern and never exceed 40.
