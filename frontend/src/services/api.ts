@@ -143,8 +143,21 @@ export async function simulateCongestion(
   apId: string = 'ap-a-01',
   config: ApiConfig = DEFAULT_CONFIG
 ): Promise<IngestResponse> {
-  // High latency, low loss, good RSSI, 150+ clients
-  const events = [1, 2, 3].map(() => ({
+  // 1. Fill seats via card_access (116 students enter, leaving only 4 free seats out of 120)
+  const cardEvents = Array.from({ length: 116 }, (_, i) => {
+    const hex = (i + 1).toString(16).padStart(8, '0');
+    return {
+      event_type: 'card_access',
+      event_id: makeEventId(),
+      timestamp: getTimestamp(),
+      location_id: locationId,
+      student_hash: `s_${hex}`,
+      action: 'enter',
+    };
+  });
+
+  // 2. High latency, low loss, good RSSI, 180+ clients to trip congestion rule
+  const wifiEvents = [1, 2, 3].map(() => ({
     event_type: 'wifi_telemetry',
     event_id: makeEventId(),
     timestamp: getTimestamp(),
@@ -159,7 +172,7 @@ export async function simulateCongestion(
     syslog: ['QUEUE_OVERFLOW: client buffer full', 'CHANNEL_UTIL: 96%'],
   }));
 
-  return sendEventsBatch(events, config);
+  return sendEventsBatch([...cardEvents, ...wifiEvents], config);
 }
 
 export async function simulateLabDown(
@@ -306,6 +319,19 @@ export async function simulateHealthyCampus(
         detail: 'Normal operation',
       });
     }
+  }
+
+  // Release congested students from Block A
+  for (let i = 1; i <= 116; i++) {
+    const hex = i.toString(16).padStart(8, '0');
+    events.push({
+      event_type: 'card_access',
+      event_id: makeEventId(),
+      timestamp: getTimestamp(),
+      location_id: 'block-a',
+      student_hash: `s_${hex}`,
+      action: 'exit',
+    });
   }
 
   return sendEventsBatch(events, config);
