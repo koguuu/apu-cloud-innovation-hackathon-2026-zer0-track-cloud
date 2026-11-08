@@ -13,7 +13,6 @@ import {
   MapPin,
   Clock,
   ShieldCheck,
-  Send,
   Zap,
 } from 'lucide-react';
 
@@ -23,7 +22,6 @@ export const StudentView: React.FC = () => {
   const [selectedLabNotification, setSelectedLabNotification] = useState<string | null>(null);
 
   // Stretch feature state: "What should I pursue next?"
-  const [customQuestion, setCustomQuestion] = useState('');
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);
   const [selectedModuleTrack, setSelectedModuleTrack] = useState<'iot' | 'ai' | 'networking'>('iot');
 
@@ -42,12 +40,10 @@ export const StudentView: React.FC = () => {
     setTimeout(() => setSelectedLabNotification(null), 5000);
   };
 
-  const generateGuidance = (track: 'iot' | 'ai' | 'networking', question?: string) => {
+  const generateGuidance = (track: 'iot' | 'ai' | 'networking') => {
     if (track === 'iot') {
       setAiAnswer(
-        question
-          ? `Based on your 24 lab hours in the IoT Lab and question "${question}": You have strong fundamentals in sensor telemetry and MQTT bus architecture. We recommend advancing into Edge Computing with FreeRTOS and Secure Gateway Firmware in Lab IoT.`
-          : 'Based on your 24 hours in the IoT Lab: You have mastered Microcontroller Interfacing and Protocol Decoding. Your optimal next milestone is Module IOT-304: Distributed Sensor Networks & Cloud Integration in IoT Lab.'
+        'Based on your 24 hours in the IoT Lab: You have mastered Microcontroller Interfacing and Protocol Decoding. Your optimal next milestone is Module IOT-304: Distributed Sensor Networks & Cloud Integration in IoT Lab.'
       );
     } else if (track === 'ai') {
       setAiAnswer(
@@ -185,7 +181,11 @@ export const StudentView: React.FC = () => {
               <div className="lab-radar-box">
                 <div className="radar-metric">
                   <span className="radar-label">Wi-Fi Status</span>
-                  <span className="radar-value text-green">Good ({bestLab.wifi_health.toUpperCase()})</span>
+                  <span className="radar-value text-green">
+                    {bestLab.wifi_health === 'unknown'
+                      ? 'No sensors'
+                      : `Good (${bestLab.wifi_health.toUpperCase()})`}
+                  </span>
                 </div>
                 <div className="radar-metric">
                   <span className="radar-label">IoT Telemetry</span>
@@ -268,10 +268,11 @@ export const StudentView: React.FC = () => {
             <div>
               <h2 className="section-title">
                 Raja's Lab Record & Learning Pathway
-                <span className="badge-stretch">Stretch Feature</span>
+                <span className="badge-roadmap">Roadmap · Coming Soon</span>
               </h2>
               <p className="section-desc">
-                Anonymized lab hours turn into smart guidance: "What should I pursue next?"
+                Card access and activity events are recorded via <code>lab_activity</code> telemetry.
+                Interactive Gemini dialogue is planned for Phase 2.
               </p>
             </div>
           </div>
@@ -281,7 +282,7 @@ export const StudentView: React.FC = () => {
           {/* Left: Lab Hours Tracker */}
           <div className="hours-card">
             <h3 className="hours-card-title">
-              <TrendingUp size={18} /> Verified Hands-on Hours
+              <TrendingUp size={18} /> Verified Hands-on Hours (Recorded in Backend)
             </h3>
             <div className="hours-list">
               <div
@@ -293,7 +294,7 @@ export const StudentView: React.FC = () => {
               >
                 <div className="hour-info">
                   <strong>Internet of Things (IoT Lab)</strong>
-                  <span>24 hours • Completed 4 modules</span>
+                  <span>24 hours • 4 modules completed</span>
                 </div>
                 <div className="hour-pill">24 hrs</div>
               </div>
@@ -307,7 +308,7 @@ export const StudentView: React.FC = () => {
               >
                 <div className="hour-info">
                   <strong>Artificial Intelligence (AI Lab)</strong>
-                  <span>18 hours • Completed 3 modules</span>
+                  <span>18 hours • 3 modules completed</span>
                 </div>
                 <div className="hour-pill">18 hrs</div>
               </div>
@@ -321,18 +322,18 @@ export const StudentView: React.FC = () => {
               >
                 <div className="hour-info">
                   <strong>Computer Networking (Networking Lab)</strong>
-                  <span>12 hours • Completed 2 modules</span>
+                  <span>12 hours • 2 modules completed</span>
                 </div>
                 <div className="hour-pill">12 hrs</div>
               </div>
             </div>
           </div>
 
-          {/* Right: AI Guidance Dialogue */}
-          <div className="guidance-card">
+          {/* Right: AI Guidance Dialogue Roadmap Box */}
+          <div className="guidance-card roadmap-card">
             <div className="guidance-card-header">
               <Sparkles size={18} className="text-accent" />
-              <strong>Gemini Career & Skill Pathway Advisor</strong>
+              <strong>Gemini Career Guidance (Phase 2 Preview)</strong>
             </div>
 
             <div className="guidance-body">
@@ -341,26 +342,12 @@ export const StudentView: React.FC = () => {
                   'Based on your 24 hours in the IoT Lab: You have mastered Microcontroller Interfacing and Protocol Decoding. Your optimal next milestone is Module IOT-304: Distributed Sensor Networks & Cloud Integration in IoT Lab.'}
               </p>
 
-              <form
-                className="guidance-input-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (customQuestion.trim()) {
-                    generateGuidance(selectedModuleTrack, customQuestion);
-                  }
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Ask Raja's companion: What should I pursue next?"
-                  value={customQuestion}
-                  onChange={(e) => setCustomQuestion(e.target.value)}
-                  className="guidance-input"
-                />
-                <button type="submit" className="btn-send-guidance" title="Send question">
-                  <Send size={16} />
-                </button>
-              </form>
+              <div className="roadmap-notice-box">
+                <span className="roadmap-pill">Roadmap Feature</span>
+                <p className="roadmap-notice-text">
+                  Direct student-to-Gemini conversation will launch in Phase 2. The prototype currently records raw lab activity telemetry into Starlette state storage.
+                </p>
+              </div>
             </div>
           </div>
         </div>

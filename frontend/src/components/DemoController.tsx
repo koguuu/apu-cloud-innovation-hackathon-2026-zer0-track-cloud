@@ -9,8 +9,7 @@ import {
   RotateCcw,
   CheckCircle2,
   Trash2,
-  ChevronDown,
-  ChevronUp,
+  X,
   AlertTriangle,
   PlayCircle,
 } from 'lucide-react';
@@ -69,8 +68,17 @@ export const DemoController: React.FC<DemoControllerProps> = ({ isOpen, onToggle
           <span className="demo-stat">
             Advisories: <strong>{activeAdvisoriesCount}</strong>
           </span>
-          <button type="button" className="demo-toggle-btn" aria-label="Toggle demo bar">
-            {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          <button
+            type="button"
+            className="demo-close-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            title="Turn Demo Mode OFF"
+          >
+            <X size={15} />
+            <span>Hide Demo Bar</span>
           </button>
         </div>
       </div>

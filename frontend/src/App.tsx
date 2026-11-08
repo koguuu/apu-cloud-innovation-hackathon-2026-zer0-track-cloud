@@ -11,7 +11,7 @@ import './App.css';
 const MainContent: React.FC = () => {
   const { currentView, connectionStatus, refresh, isLoading } = useApp();
   const [showSettings, setShowSettings] = useState(false);
-  const [showDemoBar, setShowDemoBar] = useState(true);
+  const [showDemoBar, setShowDemoBar] = useState(false);
 
   return (
     <div className="app-layout">
@@ -21,11 +21,13 @@ const MainContent: React.FC = () => {
         showDemoBar={showDemoBar}
       />
 
-      {/* Demo Controls Bar */}
-      <DemoController
-        isOpen={showDemoBar}
-        onToggle={() => setShowDemoBar(!showDemoBar)}
-      />
+      {/* Demo Controls Bar: visible ONLY when Demo Mode is toggled ON */}
+      {showDemoBar && (
+        <DemoController
+          isOpen={showDemoBar}
+          onToggle={() => setShowDemoBar(false)}
+        />
+      )}
 
       {/* Offline Alert Banner */}
       {connectionStatus === 'disconnected' && (

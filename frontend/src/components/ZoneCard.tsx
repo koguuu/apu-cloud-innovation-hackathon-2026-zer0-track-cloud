@@ -44,10 +44,11 @@ export const ZoneCard: React.FC<ZoneCardProps> = ({ zone, isBest, onSelect }) =>
             <WifiOff size={14} /> Offline
           </span>
         );
+      case 'unknown':
       default:
         return (
-          <span className="badge badge-wifi-unknown">
-            <Wifi size={14} /> Unknown
+          <span className="badge badge-wifi-unknown" title="No telemetry sensors installed in this zone">
+            <WifiOff size={14} /> No sensors
           </span>
         );
     }

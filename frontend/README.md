@@ -39,7 +39,7 @@ Follows the student persona **Raja** through his daily campus lab experience:
 * **Best Lab Right Now (`best_lab`)**: Prominent recommendation hero card showing the highest-scoring healthy lab with verified free seats and good Wi-Fi signal.
 * **Real-time Incident Advisories**: Dynamic warning banners alerting students to network anomalies and automatically pointing them to alternative healthy labs.
 * **Campus Facilities Directory**: Filterable cards covering all APU labs (AI, Cybersecurity, Networking, IoT) and academic zones (Block A, Block B, Library) with live occupancy gauges.
-* **Raja's Lab Record (Stretch Feature)**: Tracks Raja's accumulated hands-on hours (IoT, AI, Networking) with an interactive *"What should I pursue next?"* AI skill pathway advisor.
+* **Raja's Lab Record (Roadmap / Phase 2 Preview)**: Tracks Raja's accumulated hands-on hours (IoT, AI, Networking) logged via backend `lab_activity` telemetry, with an intentional roadmap preview for the Phase 2 Gemini skill advisor.
 
 ### 2. Staff IT Operations Command Center
 A professional monitoring dashboard for campus network and lab administrators:
@@ -49,11 +49,11 @@ A professional monitoring dashboard for campus network and lab administrators:
   * **Gemini Root-Cause Explanation**: Natural language diagnosis of the failure mechanism.
   * **Recommended Operational Action**: Step-by-step IT remedy.
   * **One-Click Ticket Resolution**: Directly marks tickets as resolved (`POST /tickets/{id}/resolve`).
-* **Zones Telemetry Matrix**: Tabular overview of seats, occupancy percentage, Wi-Fi status, and composite health scores.
+* **Zones Telemetry Matrix**: Tabular overview of seats, occupancy percentage, Wi-Fi status (cleanly showing *"No sensors"* for zones without probes like the Library), and composite health scores.
 * **Telegram Admin Alert Stream (`recent_notifications`)**: Live feed of alert messages dispatched to the campus administrator Telegram bot.
 
 ### 3. Integrated Hackathon Demo Controller
-A collapsible toolbar at the top of the interface allowing presenters or judges to trigger the entire demo story directly from the browser:
+A dedicated simulation toolbar hidden by default and activated via the **Demo Mode** button in the top navigation:
 * **1. Kill AP (`ap-b-02`)**: Injects 3 bad readings into Block B &rarr; engine trips &rarr; ticket opened &rarr; Raja redirected to AI Lab.
 * **2. Congest Block A**: Overloads Block A with 180+ clients &rarr; triggers congestion ticket.
 * **3. Networking Lab Down**: Drops both APs in `lab-network`.

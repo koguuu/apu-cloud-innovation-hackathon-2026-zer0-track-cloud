@@ -26,7 +26,9 @@ export const StaffDashboard: React.FC = () => {
   const totalSeats = zones.reduce((acc, z) => acc + z.seats_total, 0);
   const freeSeats = zones.reduce((acc, z) => acc + z.seats_free, 0);
   const totalIotDown = zones.reduce((acc, z) => acc + z.iot_devices_down, 0);
-  const degradedZonesCount = zones.filter((z) => z.wifi_health !== 'good').length;
+  const degradedZonesCount = zones.filter(
+    (z) => z.wifi_health === 'degraded' || z.wifi_health === 'down'
+  ).length;
 
   return (
     <div className="staff-dashboard">
@@ -210,7 +212,7 @@ export const StaffDashboard: React.FC = () => {
                     </td>
                     <td>
                       <span className={`table-badge badge-${zone.wifi_health}`}>
-                        {zone.wifi_health.toUpperCase()}
+                        {zone.wifi_health === 'unknown' ? 'NO SENSORS' : zone.wifi_health.toUpperCase()}
                       </span>
                     </td>
                     <td>

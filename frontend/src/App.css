@@ -276,11 +276,25 @@
   color: var(--text-primary);
 }
 
-.demo-toggle-btn {
-  background: transparent;
-  color: var(--text-secondary);
-  display: flex;
+.demo-close-btn {
+  display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.demo-close-btn:hover {
+  background-color: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
+  color: var(--status-danger);
 }
 
 .demo-body {
@@ -1053,14 +1067,16 @@
   box-shadow: var(--shadow-md);
 }
 
-.badge-stretch {
+.badge-stretch, .badge-roadmap {
   font-size: 0.65rem;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: 4px;
   background: linear-gradient(90deg, #ec4899, #8b5cf6);
   color: #fff;
   margin-left: 0.6rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .advisor-title-group {
@@ -1183,40 +1199,33 @@
   color: #f3e8ff;
 }
 
-.guidance-input-form {
+.roadmap-notice-box {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-}
-
-.guidance-input {
-  flex: 1;
-  padding: 0.65rem 0.9rem;
+  padding: 0.85rem 1rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--border-strong);
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.85rem;
 }
 
-.guidance-input:focus {
-  border-color: var(--accent-primary);
-  outline: none;
+.roadmap-pill {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--accent-glow);
+  color: var(--accent-light);
+  border: 1px solid var(--border-accent);
 }
 
-.btn-send-guidance {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: #fff;
-  transition: all 0.15s ease;
-}
-
-.btn-send-guidance:hover {
-  transform: translateY(-1px);
+.roadmap-notice-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
 }
 
 /* ==========================================================================
@@ -1730,6 +1739,11 @@
 .table-badge.badge-down {
   background-color: var(--status-danger-bg);
   color: var(--status-danger);
+}
+.table-badge.badge-unknown {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
 }
 
 .table-score {
