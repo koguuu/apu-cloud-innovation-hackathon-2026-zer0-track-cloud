@@ -51,6 +51,15 @@ Run `evaluate.py` after every prompt change to see whether the behaviour got bet
 | `weak_signal_single_ap` | Cue-check: one AP, -88 dBm, few clients, neighbours healthy | ap_hardware_failure | ap_hardware_failure |
 | `congestion_moderate_loss` | Cue-check: 2 overloaded APs, 2.5% loss, strong signal | congestion | congestion |
 | `ap_looks_like_congestion` | Hard case (tuned on): rules say AP failure, numbers look like congestion | ap_hardware_failure | congestion |
+| `sim_kill_ap` | Simulator `kill-ap ap-b-02`: 1 dead AP, 2 healthy neighbours | ap_hardware_failure | ap_hardware_failure |
+| `sim_iot_fault` | Simulator `iot-fault reader-net-01`: 1 IoT device down | iot_device_fault | iot_device_fault |
+| `sim_congestion` | Simulator `congestion block-a`: 3 overloaded APs | congestion | congestion |
+| `sim_lab_down` | Simulator `lab-down lab-network`: 2 dead APs, no healthy neighbours | ap_hardware_failure | ap_hardware_failure |
+| `sim_uplink` | Simulator `uplink`: all 14 APs dead | isp_uplink_outage | isp_uplink_outage |
+| `sim_degrade_block` | Simulator `degrade-block block-b`: 3 degraded APs, no healthy neighbours | ap_hardware_failure | ap_hardware_failure |
+
+The six `sim_*` scenarios hold the exact evidence Raja's simulator produced at each demo fault (real engine output,
+seed 1). They have **not been evaluated with real Gemini yet** and are not part of the results below.
 
 ### Latest real-Gemini results
 
@@ -64,6 +73,8 @@ Run `evaluate.py` after every prompt change to see whether the behaviour got bet
 | v3.1 | 8 | 24/24 (4 full runs) | 24/24 | Rules alone 21/24. 3 overrides, all on `ap_looks_like_congestion`, all correct; nothing blocked; Gemini text used in 24/24 tickets. Explanations flagged for numbers not in the evidence: 1/24, 3/24, 2/24 and 0/24 in four runs of the same prompt, 6 of 96 in total (one of the 2 in the third run was a false positive of the check; v3 had 3 of the 8 texts inspected). The 3 flagged in the second run were cue numbers: "-70 dBm" twice (`weak_signal_single_ap`) and "under 3%" once (`congestion_moderate_loss`). A single 503 in each of the first two runs, cleared by the retry; no errors in runs 3 and 4; no 429s in any v3.1 run |
 
 Read this carefully:
+- The results table covers the first 8 scenarios only. `python agent/evaluate.py` now runs all 14 (42 calls with
+  `--runs 3`), so a new run will not be comparable with the numbers below.
 - The 3 added scenarios (`uplink_two_locations`, `weak_signal_single_ap`, `congestion_moderate_loss`) were written to the
   v3 cues, so they check that Gemini follows the cues, not that the prompt generalises to borderline cases.
 - Temperature is low, so the 3 runs of a scenario are near-copies, not independent samples. This is 8 simulated

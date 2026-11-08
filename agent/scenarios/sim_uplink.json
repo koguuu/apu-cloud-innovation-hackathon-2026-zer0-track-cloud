@@ -1,0 +1,141 @@
+{
+  "name": "sim_uplink",
+  "description": "Evidence captured from Raja's simulator after 'uplink' (real engine output, seed 1). Expected cause follows simulator/README.md.",
+  "rule_cause": "isp_uplink_outage",
+  "expected_cause": "isp_uplink_outage",
+  "location_id": "campus",
+  "affected_aps": [
+    "ap-a-01",
+    "ap-a-02",
+    "ap-a-03",
+    "ap-ai-01",
+    "ap-ai-02",
+    "ap-b-01",
+    "ap-b-02",
+    "ap-b-03",
+    "ap-cyber-01",
+    "ap-cyber-02",
+    "ap-iot-01",
+    "ap-iot-02",
+    "ap-net-01",
+    "ap-net-02"
+  ],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {
+        "ap_id": "ap-a-01",
+        "location_id": "block-a",
+        "latency_ms": 1415.6,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -95.0,
+        "clients": 0
+      },
+      {
+        "ap_id": "ap-a-02",
+        "location_id": "block-a",
+        "latency_ms": 1258.2,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -90.0,
+        "clients": 3
+      },
+      {
+        "ap_id": "ap-a-03",
+        "location_id": "block-a",
+        "latency_ms": 1048.3,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -90.0,
+        "clients": 1
+      },
+      {
+        "ap_id": "ap-b-01",
+        "location_id": "block-b",
+        "latency_ms": 1226.2,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -90.0,
+        "clients": 0
+      },
+      {
+        "ap_id": "ap-b-02",
+        "location_id": "block-b",
+        "latency_ms": 872.1,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -94.0,
+        "clients": 3
+      },
+      {
+        "ap_id": "ap-b-03",
+        "location_id": "block-b",
+        "latency_ms": 827.5,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -93.0,
+        "clients": 3
+      },
+      {
+        "ap_id": "ap-ai-01",
+        "location_id": "lab-ai",
+        "latency_ms": 1345.2,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -91.0,
+        "clients": 3
+      },
+      {
+        "ap_id": "ap-ai-02",
+        "location_id": "lab-ai",
+        "latency_ms": 953.5,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -90.0,
+        "clients": 0
+      },
+      {
+        "ap_id": "ap-cyber-01",
+        "location_id": "lab-cyber",
+        "latency_ms": 741.1,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -91.0,
+        "clients": 3
+      },
+      {
+        "ap_id": "ap-cyber-02",
+        "location_id": "lab-cyber",
+        "latency_ms": 784.6,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -93.0,
+        "clients": 0
+      },
+      {
+        "ap_id": "ap-net-01",
+        "location_id": "lab-network",
+        "latency_ms": 800.1,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -93.0,
+        "clients": 3
+      },
+      {
+        "ap_id": "ap-net-02",
+        "location_id": "lab-network",
+        "latency_ms": 1125.2,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -95.0,
+        "clients": 0
+      },
+      {
+        "ap_id": "ap-iot-01",
+        "location_id": "lab-iot",
+        "latency_ms": 1369.8,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -92.0,
+        "clients": 0
+      },
+      {
+        "ap_id": "ap-iot-02",
+        "location_id": "lab-iot",
+        "latency_ms": 1260.8,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -92.0,
+        "clients": 3
+      }
+    ],
+    "total_aps": 14
+  }
+}

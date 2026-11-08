@@ -1,0 +1,43 @@
+{
+  "name": "sim_congestion",
+  "description": "Evidence captured from Raja's simulator after 'congestion block-a' (real engine output, seed 1). Expected cause follows simulator/README.md.",
+  "rule_cause": "congestion",
+  "expected_cause": "congestion",
+  "location_id": "block-a",
+  "affected_aps": [
+    "ap-a-01",
+    "ap-a-02",
+    "ap-a-03"
+  ],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {
+        "ap_id": "ap-a-01",
+        "location_id": "block-a",
+        "latency_ms": 318.6,
+        "packet_loss_pct": 2.66,
+        "rssi_dbm": -54.0,
+        "clients": 166
+      },
+      {
+        "ap_id": "ap-a-02",
+        "location_id": "block-a",
+        "latency_ms": 229.3,
+        "packet_loss_pct": 1.64,
+        "rssi_dbm": -53.0,
+        "clients": 207
+      },
+      {
+        "ap_id": "ap-a-03",
+        "location_id": "block-a",
+        "latency_ms": 265.3,
+        "packet_loss_pct": 1.21,
+        "rssi_dbm": -66.0,
+        "clients": 176
+      }
+    ],
+    "healthy_neighbours": [],
+    "total_aps": 14
+  }
+}
