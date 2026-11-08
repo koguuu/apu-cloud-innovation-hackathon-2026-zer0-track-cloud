@@ -1,0 +1,21 @@
+{
+  "name": "sim_iot_fault",
+  "description": "Evidence captured from Raja's simulator after 'iot-fault reader-net-01' (real engine output, seed 1). Expected cause follows simulator/README.md.",
+  "rule_cause": "iot_device_fault",
+  "expected_cause": "iot_device_fault",
+  "location_id": "lab-network",
+  "affected_aps": [],
+  "affected_devices": [
+    "reader-net-01"
+  ],
+  "evidence": {
+    "devices": [
+      {
+        "device_id": "reader-net-01",
+        "device_type": "card_reader",
+        "status": "down"
+      }
+    ],
+    "wifi_health": "good"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "sim_degrade_block",
+  "description": "Evidence captured from Raja's simulator after 'degrade-block block-b' (real engine output, seed 1). Expected cause follows simulator/README.md.",
+  "rule_cause": "ap_hardware_failure",
+  "expected_cause": "ap_hardware_failure",
+  "location_id": "block-b",
+  "affected_aps": [
+    "ap-b-01",
+    "ap-b-02",
+    "ap-b-03"
+  ],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {
+        "ap_id": "ap-b-01",
+        "location_id": "block-b",
+        "latency_ms": 400.8,
+        "packet_loss_pct": 24.61,
+        "rssi_dbm": -88.0,
+        "clients": 71
+      },
+      {
+        "ap_id": "ap-b-02",
+        "location_id": "block-b",
+        "latency_ms": 589.3,
+        "packet_loss_pct": 17.49,
+        "rssi_dbm": -85.0,
+        "clients": 66
+      },
+      {
+        "ap_id": "ap-b-03",
+        "location_id": "block-b",
+        "latency_ms": 313.0,
+        "packet_loss_pct": 39.07,
+        "rssi_dbm": -84.0,
+        "clients": 72
+      }
+    ],
+    "healthy_neighbours": [],
+    "total_aps": 14
+  }
+}

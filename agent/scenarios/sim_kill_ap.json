@@ -1,0 +1,42 @@
+{
+  "name": "sim_kill_ap",
+  "description": "Evidence captured from Raja's simulator after 'kill-ap ap-b-02' (real engine output, seed 1). Expected cause follows simulator/README.md.",
+  "rule_cause": "ap_hardware_failure",
+  "expected_cause": "ap_hardware_failure",
+  "location_id": "block-b",
+  "affected_aps": [
+    "ap-b-02"
+  ],
+  "affected_devices": [],
+  "evidence": {
+    "tripped": [
+      {
+        "ap_id": "ap-b-02",
+        "location_id": "block-b",
+        "latency_ms": 1429.9,
+        "packet_loss_pct": 100.0,
+        "rssi_dbm": -91.0,
+        "clients": 3
+      }
+    ],
+    "healthy_neighbours": [
+      {
+        "ap_id": "ap-b-01",
+        "location_id": "block-b",
+        "latency_ms": 31.3,
+        "packet_loss_pct": 0.49,
+        "rssi_dbm": -57.0,
+        "clients": 76
+      },
+      {
+        "ap_id": "ap-b-03",
+        "location_id": "block-b",
+        "latency_ms": 44.8,
+        "packet_loss_pct": 0.29,
+        "rssi_dbm": -62.0,
+        "clients": 65
+      }
+    ],
+    "total_aps": 14
+  }
+}
