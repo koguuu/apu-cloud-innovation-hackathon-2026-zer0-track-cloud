@@ -257,8 +257,8 @@ export const StaffDashboard: React.FC = () => {
                   <div className="notif-header">
                     <span className="notif-id">{notif.notification_id}</span>
                     <span className="notif-ticket">Ticket: {notif.ticket_id}</span>
-                    <span className={`delivery-pill ${notif.sent ? 'sent' : 'simulated'}`}>
-                      {notif.sent ? 'Delivered to Admin' : 'Simulated (Dev Mode)'}
+                    <span className={`delivery-pill ${notif.sent ? 'sent' : 'not-delivered'}`}>
+                      {notif.sent ? 'Delivered to Admin' : 'Not delivered'}
                     </span>
                   </div>
                   <p className="notif-text">{notif.text}</p>
