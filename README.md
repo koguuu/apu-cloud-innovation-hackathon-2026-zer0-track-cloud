@@ -41,11 +41,16 @@ pip install -r requirements.txt
 cp ../.env.example .env        # optional: add your own GEMINI_API_KEY (free key from Google AI Studio)
 uvicorn app.main:app --port 8000
 
-# 2. simulator (terminal 2, from the repo root)
+# 2. frontend (terminal 2)
+cd frontend
+npm install
+npm run dev                    # opens http://localhost:5173
+
+# 3. simulator (terminal 3, from the repo root)
 python simulator/run.py --demo
 ```
 
-Backend details and endpoints: [backend/README.md](backend/README.md) · Simulator and fault commands: [simulator/README.md](simulator/README.md)
+Frontend details: [frontend/README.md](frontend/README.md) · Backend details: [backend/README.md](backend/README.md) · Simulator: [simulator/README.md](simulator/README.md)
 
 ## Demo story
 
@@ -72,6 +77,7 @@ We follow one student, "Raja":
 .
 ├── backend/        API, detection, tickets, advisories, security (57 tests)
 ├── simulator/      simulated campus data and fault injection (12 tests)
+├── frontend/       student companion, staff dashboard, demo controller
 ├── docs/           architecture, data contract, pitch outline
 ├── CONTRIBUTING.md branch and pull request workflow
 └── .env.example    copy to .env, never commit secrets
