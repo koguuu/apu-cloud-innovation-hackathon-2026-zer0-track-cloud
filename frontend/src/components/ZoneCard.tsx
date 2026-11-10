@@ -8,17 +8,15 @@ import {
   CheckCircle,
   Star,
   Cpu,
-  MapPin,
-  ArrowRight,
+  MapPin
 } from 'lucide-react';
 
 interface ZoneCardProps {
   zone: ZoneStatus;
   isBest?: boolean;
-  onSelect?: (zone: ZoneStatus) => void;
 }
 
-export const ZoneCard: React.FC<ZoneCardProps> = ({ zone, isBest, onSelect }) => {
+export const ZoneCard: React.FC<ZoneCardProps> = ({ zone, isBest }) => {
   const isLab = zone.location_id.startsWith('lab-');
   const occupancyPct = Math.round(
     ((zone.seats_total - zone.seats_free) / zone.seats_total) * 100
@@ -122,18 +120,6 @@ export const ZoneCard: React.FC<ZoneCardProps> = ({ zone, isBest, onSelect }) =>
         </div>
       </div>
 
-      {onSelect && (
-        <div className="zone-card-footer">
-          <button
-            type="button"
-            className="btn-zone-action"
-            onClick={() => onSelect(zone)}
-          >
-            <span>{isBest ? 'Select Recommended Lab' : 'View Lab Details'}</span>
-            <ArrowRight size={15} />
-          </button>
-        </div>
-      )}
     </div>
   );
 };
