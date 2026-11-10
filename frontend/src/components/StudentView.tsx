@@ -254,7 +254,6 @@ export const StudentView: React.FC = () => {
               key={zone.location_id}
               zone={zone}
               isBest={zone.location_id === bestLab?.location_id}
-              onSelect={handleSelectLab}
             />
           ))}
         </div>
