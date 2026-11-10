@@ -69,7 +69,7 @@ We follow one student, "Raja":
 | **Raja** | Simulator: Wi-Fi/IoT probes, card events, fault injection |
 | **Pang Zai Yong** | Frontend: student page and staff dashboard |
 | **Pang Zai Jie** | Telegram admin alert, occupancy, pitch deck |
-| **Koguleswaraan** | Backend, cloud, security, final submission |
+| **Koguleswaraan** | Backend, cloud, security, Testing |
 
 ## Repo structure
 
