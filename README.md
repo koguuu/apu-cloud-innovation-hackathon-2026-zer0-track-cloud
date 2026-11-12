@@ -8,6 +8,12 @@ An autonomous campus agent that watches Wi-Fi and IoT health across Block A, Blo
 root cause when something fails, alerts the admin automatically, and tells students which labs are free and
 working right now. All data in this prototype is simulated.
 
+## Live demo
+
+**https://smart-lab-demo.vercel.app** (frontend on Vercel, backend on Render free tier)
+
+Try it: click **Demo Mode** (top right), press **6. Recover Health** to load the campus, then **1. Kill AP** and watch the ticket and rerouting advisory appear. Press **Recover Health** again to see the ticket close. The first load may take up to a minute on free hosting. All data is simulated.
+
 ## What it does
 
 | | |
